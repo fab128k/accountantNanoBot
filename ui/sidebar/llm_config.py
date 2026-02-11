@@ -221,17 +221,45 @@ def render_llm_config() -> Tuple[str, str, str, str, str, str, float, int, str]:
     # ========== CLOUD PROVIDER ==========
     else:
         st.sidebar.markdown("### ☁️ Cloud")
-        provider = st.sidebar.selectbox(
-            "Provider", 
-            list(CLOUD_PROVIDERS.keys())
+
+        # Load YAML config (None = fallback to hardcoded CLOUD_PROVIDERS)
+        from config.settings import (
+            load_cloud_models_config,
+            get_cloud_providers,
+            get_cloud_provider_models,
+            get_cloud_models_settings,
         )
-        
-        config = CLOUD_PROVIDERS.get(provider, CLOUD_PROVIDERS["Custom"])
-        pk = config["key_name"]
-        ev = config["env_var"]
-        dm = config["default_model"]
-        db = config["base_url"]
-        
+        cloud_config = load_cloud_models_config()
+
+        if cloud_config:
+            # ── YAML-based provider selection ──
+            yaml_providers = get_cloud_providers(cloud_config)
+            provider_labels = [f"{p['icon']} {p['name']}" for p in yaml_providers]
+
+            selected_idx = st.sidebar.selectbox(
+                "Provider",
+                range(len(yaml_providers)),
+                format_func=lambda i: provider_labels[i],
+            )
+            selected_provider = yaml_providers[selected_idx]
+
+            provider = selected_provider["name"]
+            pk = selected_provider["id"]               # key_name for secrets
+            ev = f"{pk.upper()}_API_KEY"               # env var convention
+            dm = selected_provider["default_model"]
+            db = selected_provider["base_url"]
+        else:
+            # ── Fallback: hardcoded CLOUD_PROVIDERS ──
+            provider = st.sidebar.selectbox(
+                "Provider",
+                list(CLOUD_PROVIDERS.keys())
+            )
+            fallback_cfg = CLOUD_PROVIDERS.get(provider, CLOUD_PROVIDERS["Custom"])
+            pk = fallback_cfg["key_name"]
+            ev = fallback_cfg["env_var"]
+            dm = fallback_cfg["default_model"]
+            db = fallback_cfg["base_url"]
+
         existing_key = load_api_key(pk, ev)
 
         # Carica impostazioni sicurezza
@@ -307,8 +335,46 @@ def render_llm_config() -> Tuple[str, str, str, str, str, str, float, int, str]:
             if api_key and st.sidebar.button("💾 Salva"):
                 save_api_key_to_file(pk, api_key)
                 st.rerun()
-        
-        model = st.sidebar.text_input("Modello", value=dm)
+
+        # ── Model selection ──
+        if cloud_config:
+            cloud_settings = get_cloud_models_settings(cloud_config)
+            yaml_models = get_cloud_provider_models(cloud_config, selected_provider["id"])
+
+            if yaml_models:
+                model_labels = [m["name"] for m in yaml_models]
+                model_ids = [m["id"] for m in yaml_models]
+
+                # Add custom option if allowed
+                allow_custom = cloud_settings.get("allow_custom_models", True)
+                custom_option = "✏️ Altro..."
+                if allow_custom:
+                    model_labels.append(custom_option)
+                    model_ids.append("__custom__")
+
+                # Find default index
+                default_idx = 0
+                if dm in model_ids:
+                    default_idx = model_ids.index(dm)
+
+                chosen = st.sidebar.selectbox(
+                    "Modello",
+                    range(len(model_labels)),
+                    index=default_idx,
+                    format_func=lambda i: model_labels[i],
+                )
+
+                if model_ids[chosen] == "__custom__":
+                    model = st.sidebar.text_input("Nome modello", value="")
+                else:
+                    model = model_ids[chosen]
+            else:
+                # Provider without predefined models (e.g. Custom)
+                model = st.sidebar.text_input("Modello", value=dm)
+        else:
+            # Fallback: simple text input
+            model = st.sidebar.text_input("Modello", value=dm)
+
         base_url = db
     
     # Salva modello corrente

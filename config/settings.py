@@ -442,6 +442,102 @@ def get_remote_servers_settings(config: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ============================================================================
+# CLOUD MODELS LOADER
+# ============================================================================
+
+# Paths derived from existing constants (same base directory)
+_CLOUD_MODELS_FILE = REMOTE_SERVERS_CONFIG_FILE.parent / "cloud_models.yaml"
+_CLOUD_MODELS_ALT = REMOTE_SERVERS_CONFIG_ALT.parent / "cloud_models.yaml"
+
+
+def load_cloud_models_config() -> Optional[Dict[str, Any]]:
+    """
+    Carica configurazione modelli cloud da file YAML.
+
+    Cerca in ordine:
+    1. cloud_models.yaml nella root del progetto
+    2. config/cloud_models.yaml
+
+    Returns:
+        Dict con la configurazione o None se non trovata/errore
+    """
+    if not YAML_AVAILABLE:
+        return None
+
+    config_path = None
+    if _CLOUD_MODELS_FILE.exists():
+        config_path = _CLOUD_MODELS_FILE
+    elif _CLOUD_MODELS_ALT.exists():
+        config_path = _CLOUD_MODELS_ALT
+
+    if not config_path:
+        return None
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+        return config
+    except Exception as e:
+        print(f"⚠️ Errore lettura config cloud models: {e}")
+        return None
+
+
+def get_cloud_providers(config: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Estrae lista provider disponibili dalla config cloud.
+
+    Args:
+        config: Configurazione caricata da load_cloud_models_config()
+
+    Returns:
+        Lista di dict con info provider (id, name, icon, base_url, models, default_model)
+    """
+    providers: list[Dict[str, Any]] = []
+    providers_config = config.get("providers", {})
+
+    for provider_id, provider_data in providers_config.items():
+        provider_info = {
+            "id": provider_id,
+            "name": provider_data.get("name", provider_id),
+            "icon": provider_data.get("icon", "☁️"),
+            "base_url": provider_data.get("base_url", ""),
+            "models": provider_data.get("models", []),
+            "default_model": provider_data.get("default_model", ""),
+        }
+        providers.append(provider_info)
+
+    return providers
+
+
+def get_cloud_provider_models(config: Dict[str, Any], provider_id: str) -> List[Dict[str, str]]:
+    """
+    Ritorna la lista modelli per un provider specifico.
+
+    Args:
+        config: Configurazione caricata da load_cloud_models_config()
+        provider_id: ID del provider (es. "openai", "anthropic")
+
+    Returns:
+        Lista di dict con id e name per ogni modello
+    """
+    provider_data = config.get("providers", {}).get(provider_id, {})
+    return provider_data.get("models", [])
+
+
+def get_cloud_models_settings(config: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Ritorna le impostazioni generali per i modelli cloud.
+
+    Args:
+        config: Configurazione caricata da load_cloud_models_config()
+
+    Returns:
+        Dict con settings (allow_custom_models, etc.)
+    """
+    return config.get("settings", {"allow_custom_models": True})
+
+
+# ============================================================================
 # SECURITY SETTINGS LOADER
 # ============================================================================
 
