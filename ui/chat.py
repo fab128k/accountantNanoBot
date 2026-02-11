@@ -1,17 +1,22 @@
 # ui/chat.py
-# DeepAiUG v1.8.0 - Rendering Chat + Socratic Buttons
+# DeepAiUG v1.9.1 - Rendering Chat + Socratic Buttons
 # ============================================================================
 # 🆕 v1.5.0: Aggiunto supporto per visualizzazione allegati nei messaggi
 # 🆕 v1.6.1: Aggiunto bottone "Genera alternative" (approccio socratico)
 # 🆕 v1.8.0: Passaggio user_question e socratic_mode ai bottoni socratici
+# 🆕 v1.9.1: Fix bubble rendering - singola st.markdown() per wrappare contenuto
 # ============================================================================
 
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
 import streamlit as st
+from markdown_it import MarkdownIt
 
 from ui.socratic import render_socratic_buttons
+
+# Markdown-to-HTML converter (tables + fenced code blocks enabled)
+_md = MarkdownIt("commonmark", {"html": True}).enable("table")
 
 
 def render_chat_message(
@@ -61,22 +66,31 @@ def render_chat_message(
     cols = st.columns(col_config)
     with cols[1]:
         st.caption(f"{avatar} **{label}** • {time_str}")
-        st.markdown(f'<div class="{bubble_class}">', unsafe_allow_html=True)
 
-        # v1.5.0 - Mostra allegati se presenti (solo per messaggi utente)
+        # Build bubble HTML as a single block so CSS wraps the content
+        bubble_parts: list[str] = []
+
+        # v1.5.0 - Attachments line (user messages only)
         if attachments and role == "user":
             attachments_str = ", ".join(attachments)
-            st.caption(f"📎 **Allegati:** {attachments_str}")
+            bubble_parts.append(
+                f'<p class="bubble-attachments">📎 <strong>Allegati:</strong> {attachments_str}</p>'
+            )
 
-        st.write(content)
+        # Convert markdown content to HTML
+        bubble_parts.append(_md.render(content))
 
-        # Show sources if present (RAG)
+        inner_html = "\n".join(bubble_parts)
+        st.markdown(
+            f'<div class="{bubble_class}">{inner_html}</div>',
+            unsafe_allow_html=True,
+        )
+
+        # Show sources if present (RAG) — kept outside bubble as native expander
         if sources:
             with st.expander(f"📎 Fonti ({len(sources)})"):
                 for src in sources:
                     st.caption(f"• {src}")
-
-        st.markdown('</div>', unsafe_allow_html=True)
 
         # v1.8.0 - Bottoni socratici (solo per risposte AI)
         if role == "assistant" and content:
