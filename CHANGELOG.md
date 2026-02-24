@@ -7,6 +7,40 @@ e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
 ---
 
+## [1.11.0] - 2026-02-24 — Branding + UX Polish
+
+### ✨ Nuove Funzionalità
+
+- **🎨 branding.yaml**: Titolo, icona e banner novità personalizzabili
+  senza modificare il codice. Fallback silenzioso se file assente.
+- **🤖 Nome modello + timestamp** negli output socratici (tutti e 5 i bottoni)
+- **🤖 Nome modello + timestamp** nella mappa sessione
+- **📊 Mappa collassabile**: expander sidebar per recuperare spazio
+- **🔄 Bottone "Rigenera mappa"**: rigenera dopo ulteriori domande
+- **📊 Bottone "Genera mappa"**: disponibile su conversazioni caricate
+
+### 🐛 Bug Fix
+
+- **Parser frecce vuote**: `_parse_llm_response()` riscritto con regex +
+  separatori multipli (→, ->, :) + fallback testo grezzo.
+  Nessuna freccia vuota con nessun modello.
+- **Posizione nudge**: spostato dentro la sezione "Mappa sessione" in sidebar
+- **Reset mappa su caricamento**: la mappa della sessione precedente
+  non resta più visibile quando si carica un'altra conversazione
+
+### 🔧 Modifiche Tecniche
+
+- `branding.yaml` (root): Nuovo file configurazione personalizzazione UI
+- `config/branding.py`: `load_branding()` + 6 costanti modulo (APP_TITLE, APP_ICON, APP_SUBTITLE, NEWS_BANNER_*)
+- `config/__init__.py`: +12 export (6 branding + 4 session map da costanti precedenti)
+- `app.py`: Valori hardcoded sostituiti con costanti branding, nudge spostato in sidebar
+- `ui/socratic/buttons.py`: +`_render_model_timestamp()` in 5 expander
+- `ui/socratic/session_map.py`: Parser riscritto con `re.match`, `import re` al top
+- `ui/sidebar/session_map_widget.py`: +`render_generate_map_button()`, expander collassabile, popover tooltip, parametro `model_name`
+- `ui/sidebar/conversations.py`: Reset stato F2 su caricamento conversazione
+
+---
+
 ## [1.10.0] - 2026-02-23 — Mappa Sessione (F2)
 
 ### Filosofia

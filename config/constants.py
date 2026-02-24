@@ -8,9 +8,9 @@ from pathlib import Path
 # VERSIONE
 # ============================================================================
 
-VERSION = "1.10.0"
+VERSION = "1.11.0"
 VERSION_STRING = f"v{VERSION}"
-VERSION_DESCRIPTION = "Mappa Sessione — Attrito sul pensiero"
+VERSION_DESCRIPTION = "Branding + UX Polish"
 
 # ============================================================================
 # PATHS

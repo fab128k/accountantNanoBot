@@ -65,6 +65,8 @@ v1.0.0 ✅ (2026-01-01)          Base interface + Multi-provider
    │
    ├─→ v1.10.0 ✅ (2026-02-23)  + 📊 Mappa Sessione (F2) — Attrito sul pensiero
    │
+   ├─→ v1.11.0 ✅ (2026-02-24)  + 🎨 Branding + UX Polish + Bug Fix parser
+   │
    └─→ v2.0.0 🎯 (Q2-Q3 2026)   + Semantic Layer + Knowledge Graph
 
 ✅ = Completata
@@ -77,6 +79,22 @@ v1.0.0 ✅ (2026-01-01)          Base interface + Multi-provider
 ---
 
 ## ✅ Completate
+
+### v1.11.0 — Branding + UX Polish ✅
+**Data:** 2026-02-24
+
+**Nuovi file:**
+- `branding.yaml`: Personalizzazione titolo, icona e banner novità
+- `config/branding.py`: `load_branding()` + 6 costanti (APP_TITLE, APP_ICON, APP_SUBTITLE, NEWS_BANNER_*)
+
+**Modifiche:**
+- [x] `config/__init__.py`: +12 export (6 branding + 4 session map)
+- [x] `app.py`: Hardcoded → costanti branding, nudge spostato in sidebar
+- [x] `ui/socratic/buttons.py`: +`_render_model_timestamp()` nei 5 expander
+- [x] `ui/socratic/session_map.py`: Parser riscritto con regex + fallback robusto
+- [x] `ui/sidebar/session_map_widget.py`: Mappa collassabile, popover tooltip, bottoni genera/rigenera
+- [x] `ui/sidebar/conversations.py`: Reset stato F2 su caricamento conversazione
+- [x] VERSION → 1.11.0
 
 ### v1.10.0 — Mappa Sessione (F2) ✅
 **Data:** 2026-02-23
@@ -237,7 +255,7 @@ Nessun altro file modificato.
 
 ---
 
-## 🛠️ Architettura Attuale (v1.10.0)
+## 🛠️ Architettura Attuale (v1.11.0)
 
 ```
 datapizza-streamlit-interface/
@@ -246,10 +264,12 @@ datapizza-streamlit-interface/
 ├── remote_servers.yaml       # Config server remoti
 ├── cloud_models.yaml         # Config modelli cloud (NEW v1.9.1)
 ├── security_settings.yaml    # Impostazioni sicurezza
+├── branding.yaml             # Personalizzazione UI (NEW v1.11.0)
 │
 ├── config/                   # Configurazione
 │   ├── constants.py          # VERSION, PATHS, WIKI_TYPES, SOCRATIC_MODES
-│   └── settings.py           # Loaders, API keys
+│   ├── settings.py           # Loaders, API keys
+│   └── branding.py           # load_branding() + 6 costanti (NEW v1.11.0)
 │
 ├── core/                     # Logica core
 │   ├── llm_client.py         # Factory LLM
@@ -317,5 +337,5 @@ Vedi [CONTRIBUTING.md](CONTRIBUTING.md) per dettagli.
 
 ---
 
-*Ultimo aggiornamento: 2026-02-23*
+*Ultimo aggiornamento: 2026-02-24*
 *DeepAiUG Streamlit Interface © 2026*
