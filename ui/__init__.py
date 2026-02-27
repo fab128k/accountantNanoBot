@@ -50,6 +50,9 @@ from ui.socratic import (
     clear_socratic_cache,
 )
 
+# v1.11.1 - Matrix Theme
+from ui.style import inject_matrix_style
+
 __all__ = [
     # Styles
     "MAIN_CSS",
@@ -84,4 +87,6 @@ __all__ = [
     # 🆕 v1.6.1 - Socratic
     "render_socratic_buttons",
     "clear_socratic_cache",
+    # v1.11.1 - Matrix Theme
+    "inject_matrix_style",
 ]

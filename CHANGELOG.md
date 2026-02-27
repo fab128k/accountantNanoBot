@@ -7,6 +7,43 @@ e il progetto aderisce a [Semantic Versioning](https://semver.org/lang/it/).
 
 ---
 
+## [1.11.1] - 2026-02-27 — Matrix Theme
+
+### ✨ Nuove Funzionalità
+
+- **🎨 Matrix Theme**: Tema visivo completo ispirato a The Matrix
+  - Background scuro `#020c06` con scanlines CRT overlay
+  - Palette teal/green: `#00d4aa` (primary), `#00ff41` (accent), `#c8ffd4` (text)
+  - Glitch animation su titolo H1 (Cinzel serif)
+  - Tipografia: Cinzel (H1), Exo 2 (H2/H3/chat), Share Tech Mono (bottoni/input/metric)
+  - Chat bubbles, bottoni, input, selectbox, expander, metric, alert tutti stilizzati
+  - Scrollbar personalizzata teal 3px
+  - Matrix rain canvas animation (katakana + hex + simboli matematici, opacity 5.5%)
+  - `branding.yaml`: `matrix_rain` (on/off) e `matrix_rain_intensity` (opacità) configurabili
+
+### 📁 Nuovi File
+
+```
+.streamlit/config.toml   # Tema Streamlit nativo (primaryColor, bg, font monospace)
+ui/style.py              # inject_matrix_style(), _inject_css(), _inject_matrix_rain()
+```
+
+### 🔧 Modifiche Tecniche
+
+- `app.py`: +import `inject_matrix_style`, chiamata subito dopo `st.set_page_config()`
+- `ui/__init__.py`: +import e +`__all__` entry per `inject_matrix_style`
+- `config/constants.py`: VERSION → 1.11.1, VERSION_DESCRIPTION → "Matrix Theme"
+- `config/branding.py`: +`MATRIX_RAIN_ENABLED`, +`MATRIX_RAIN_INTENSITY`, merge scalari in `load_branding()`
+- `branding.yaml`: +`matrix_rain`, +`matrix_rain_intensity`
+
+### 📝 Note
+
+- **Solo stile**: nessuna modifica alla logica applicativa esistente
+- Il tema Streamlit nativo (`.streamlit/config.toml`) imposta i colori base; il CSS custom in `ui/style.py` aggiunge tipografia, animazioni e dettagli
+- La matrix rain usa `streamlit.components.v1.html()` con `height=0` per non occupare spazio nel layout
+
+---
+
 ## [1.11.0] - 2026-02-24 — Branding + UX Polish
 
 ### ✨ Nuove Funzionalità

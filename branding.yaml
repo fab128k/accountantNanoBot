@@ -10,3 +10,7 @@ news_banner:
   enabled: true
   text: "Modalità Socratica - Scegli la profondità di analisi!"
   version: "1.10.0"
+
+# Matrix rain — effetto visivo
+matrix_rain: true          # true/false — attiva/disattiva
+matrix_rain_intensity: 0.055  # float 0.01-0.20 — opacità pioggia

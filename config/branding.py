@@ -28,6 +28,9 @@ _DEFAULTS: dict = {
         "text": "Modalità Socratica - Scegli la profondità di analisi!",
         "version": "1.10.0",
     },
+    # v1.11.1 - Matrix rain
+    "matrix_rain": True,
+    "matrix_rain_intensity": 0.055,
 }
 
 
@@ -55,11 +58,16 @@ def load_branding() -> dict:
 
     # Merge: i campi mancanti nel YAML prendono il valore default
     result: dict = {}
-    for section_key, section_defaults in _DEFAULTS.items():
-        user_section = data.get(section_key, {})
-        if not isinstance(user_section, dict):
-            user_section = {}
-        result[section_key] = {**section_defaults, **user_section}
+    for key, default_value in _DEFAULTS.items():
+        if isinstance(default_value, dict):
+            # Nested section — merge key-by-key
+            user_section = data.get(key, {})
+            if not isinstance(user_section, dict):
+                user_section = {}
+            result[key] = {**default_value, **user_section}
+        else:
+            # Scalar value — use user value if present, else default
+            result[key] = data.get(key, default_value)
 
     return result
 
@@ -77,3 +85,7 @@ APP_SUBTITLE: str = _branding["app"]["subtitle"]
 NEWS_BANNER_ENABLED: bool = _branding["news_banner"]["enabled"]
 NEWS_BANNER_TEXT: str = _branding["news_banner"]["text"]
 NEWS_BANNER_VERSION: str = _branding["news_banner"]["version"]
+
+# v1.11.1 - Matrix rain
+MATRIX_RAIN_ENABLED: bool = _branding.get("matrix_rain", True)
+MATRIX_RAIN_INTENSITY: float = float(_branding.get("matrix_rain_intensity", 0.055))

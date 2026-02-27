@@ -8,9 +8,9 @@ from pathlib import Path
 # VERSIONE
 # ============================================================================
 
-VERSION = "1.11.0"
+VERSION = "1.11.1"
 VERSION_STRING = f"v{VERSION}"
-VERSION_DESCRIPTION = "Branding + UX Polish"
+VERSION_DESCRIPTION = "Matrix Theme"
 
 # ============================================================================
 # PATHS

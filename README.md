@@ -6,7 +6,7 @@
 > *"Non semplifica il pensare, ma lo allena."*
 > — Carmelo Quartarone, Innovation Senior Developer @ Cloudia Research
 
-[![Version](https://img.shields.io/badge/version-1.11.0-blue.svg)](https://github.com/EnzoGitHub27/datapizza-streamlit-interface/releases/tag/v1.11.0)
+[![Version](https://img.shields.io/badge/version-1.11.1-blue.svg)](https://github.com/EnzoGitHub27/datapizza-streamlit-interface/releases/tag/v1.11.1)
 [![Python](https://img.shields.io/badge/python-3.9+-green.svg)](https://python.org)
 [![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)](https://streamlit.io)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
@@ -29,6 +29,13 @@
 - ♻️ **Architettura modulare** - Codice organizzato in packages
 
 ---
+
+### 🎨 Novità v1.11.1 — Matrix Theme
+
+- **Matrix Theme**: tema visivo completo (sfondo scuro, palette teal/green, glitch H1, scanlines CRT)
+- **Matrix rain**: animazione canvas con katakana + hex + simboli matematici
+- **Tipografia**: Cinzel (titoli), Exo 2 (contenuti), Share Tech Mono (input/bottoni)
+- **Componenti stilizzati**: chat bubbles, bottoni, input, selectbox, metric, scrollbar
 
 ### 🎨 Novità v1.11.0 — Branding + UX Polish
 
@@ -144,16 +151,17 @@ Sistema completo per proteggere i tuoi documenti sensibili:
 
 ---
 
-## 🏗️ Architettura v1.11.0
+## 🏗️ Architettura v1.11.1
 
 ```
 datapizza-streamlit-interface/
 ├── app.py                    # ⭐ Entry point principale
+├── .streamlit/config.toml    # ⭐ NEW: Tema Streamlit nativo (Matrix)
 ├── wiki_sources.yaml         # Configurazione sorgenti wiki
 ├── remote_servers.yaml       # Config server remoti
-├── cloud_models.yaml         # ⭐ NEW: Config modelli cloud
+├── cloud_models.yaml         # Config modelli cloud
 ├── security_settings.yaml    # Impostazioni sicurezza
-├── branding.yaml             # ⭐ NEW: Personalizzazione titolo/icona/banner
+├── branding.yaml             # Personalizzazione titolo/icona/banner
 │
 ├── config/                   # 📁 Configurazione
 │   ├── constants.py          # Costanti, WIKI_TYPES, VISION_MODELS
@@ -181,6 +189,7 @@ datapizza-streamlit-interface/
 │
 └── ui/                       # 📁 Interfaccia utente
     ├── styles.py             # CSS
+    ├── style.py              # ⭐ NEW: Matrix Theme (CSS + rain animation)
     ├── chat.py               # Rendering chat
     ├── file_upload.py        # Widget upload file
     ├── privacy_warning.py    # Dialog privacy
@@ -386,6 +395,7 @@ Vedi [ROADMAP.md](ROADMAP.md) per il piano completo.
 
 | Versione | Feature | Stato |
 |----------|---------|-------|
+| v1.11.1 | 🎨 Matrix Theme | ✅ |
 | v1.11.0 | 🎨 Branding + UX Polish + Bug Fix parser | ✅ |
 | v1.10.0 | 📊 Mappa Sessione — Attrito sul pensiero | ✅ |
 | v1.9.1 | 🎨 UI Polish + ☁️ Cloud Config + 🔒 Privacy Granulare | ✅ |

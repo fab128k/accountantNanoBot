@@ -118,6 +118,9 @@ from ui.sidebar.session_map_widget import (
     render_generate_map_button,
 )
 
+# v1.11.1 - Matrix Theme
+from ui.style import inject_matrix_style
+
 # ============================================================================
 # PAGE CONFIG
 # ============================================================================
@@ -128,6 +131,9 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# v1.11.1 - Matrix Theme
+inject_matrix_style()
 
 # Inject CSS
 st.markdown(MAIN_CSS, unsafe_allow_html=True)

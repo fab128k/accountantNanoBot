@@ -67,6 +67,8 @@ v1.0.0 ✅ (2026-01-01)          Base interface + Multi-provider
    │
    ├─→ v1.11.0 ✅ (2026-02-24)  + 🎨 Branding + UX Polish + Bug Fix parser
    │
+   ├─→ v1.11.1 ✅ (2026-02-27)  + 🎨 Matrix Theme
+   │
    └─→ v2.0.0 🎯 (Q2-Q3 2026)   + Semantic Layer + Knowledge Graph
 
 ✅ = Completata
@@ -79,6 +81,23 @@ v1.0.0 ✅ (2026-01-01)          Base interface + Multi-provider
 ---
 
 ## ✅ Completate
+
+### v1.11.1 — Matrix Theme ✅
+**Data:** 2026-02-27
+
+**Nuovi file:**
+- `.streamlit/config.toml`: Tema Streamlit nativo (primaryColor, bg, font monospace)
+- `ui/style.py`: `inject_matrix_style()`, `_inject_css()`, `_inject_matrix_rain()`
+
+**Modifiche:**
+- [x] `app.py`: +import `inject_matrix_style`, chiamata subito dopo `st.set_page_config()`
+- [x] `ui/__init__.py`: +import e +`__all__` entry per `inject_matrix_style`
+- [x] `config/constants.py`: VERSION → 1.11.1, VERSION_DESCRIPTION → "Matrix Theme"
+- [x] `config/branding.py`: +`MATRIX_RAIN_ENABLED`, +`MATRIX_RAIN_INTENSITY`, merge scalari in `load_branding()`
+- [x] `branding.yaml`: +`matrix_rain` (on/off), +`matrix_rain_intensity` (opacità configurabile)
+- [x] CSS completo: scanlines CRT, glitch H1, tipografia (Cinzel/Exo 2/Share Tech Mono)
+- [x] Matrix rain canvas nel parent document (escape iframe), opacity configurabile
+- [x] Scrollbar teal 3px, padding-top ridotto
 
 ### v1.11.0 — Branding + UX Polish ✅
 **Data:** 2026-02-24
@@ -255,21 +274,22 @@ Nessun altro file modificato.
 
 ---
 
-## 🛠️ Architettura Attuale (v1.11.0)
+## 🛠️ Architettura Attuale (v1.11.1)
 
 ```
 datapizza-streamlit-interface/
 ├── app.py                    # Entry point
+├── .streamlit/config.toml    # Tema Streamlit nativo (NEW v1.11.1)
 ├── wiki_sources.yaml         # Config sorgenti
 ├── remote_servers.yaml       # Config server remoti
 ├── cloud_models.yaml         # Config modelli cloud (NEW v1.9.1)
 ├── security_settings.yaml    # Impostazioni sicurezza
-├── branding.yaml             # Personalizzazione UI (NEW v1.11.0)
+├── branding.yaml             # Personalizzazione UI + Matrix rain (v1.11.0/v1.11.1)
 │
 ├── config/                   # Configurazione
 │   ├── constants.py          # VERSION, PATHS, WIKI_TYPES, SOCRATIC_MODES
 │   ├── settings.py           # Loaders, API keys
-│   └── branding.py           # load_branding() + 6 costanti (NEW v1.11.0)
+│   └── branding.py           # load_branding() + 8 costanti (v1.11.0/v1.11.1)
 │
 ├── core/                     # Logica core
 │   ├── llm_client.py         # Factory LLM
@@ -292,6 +312,7 @@ datapizza-streamlit-interface/
 │
 └── ui/                       # Interfaccia
     ├── styles.py
+    ├── style.py              # Matrix Theme CSS + rain (NEW v1.11.1)
     ├── chat.py               # Integrato con socratic
     ├── file_upload.py
     ├── privacy_warning.py
@@ -337,5 +358,5 @@ Vedi [CONTRIBUTING.md](CONTRIBUTING.md) per dettagli.
 
 ---
 
-*Ultimo aggiornamento: 2026-02-24*
+*Ultimo aggiornamento: 2026-02-27*
 *DeepAiUG Streamlit Interface © 2026*
