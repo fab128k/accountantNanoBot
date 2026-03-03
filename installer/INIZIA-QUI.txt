@@ -57,6 +57,77 @@ PROBLEMI COMUNI
     Mac/Linux: ~/DeepAiUG_install_log.txt
 
 
+COME AGGIORNARE DEEPAIUG
+------------------------------------------------------------
+
+  Quando esce una nuova versione, NON reinstallare da zero.
+  Usa lo script di aggiornamento — preserva tutte le tue
+  conversazioni e configurazioni.
+
+  WINDOWS
+    1. Vai in C:\Users\[TUO NOME]\DeepAiUG\installer\
+    2. Tasto destro su AGGIORNA_DeepAiUG.bat
+    3. "Esegui come amministratore"
+    4. Lo script aggiorna il codice e preserva le conversazioni
+
+  MAC
+    1. Apri il Terminale
+    2. Scrivi: bash ~/DeepAiUG/installer/aggiorna_deepaiug_mac.sh
+    3. Premi INVIO e segui le istruzioni
+
+  LINUX
+    1. Apri il terminale
+    2. Scrivi: bash ~/DeepAiUG/installer/aggiorna_deepaiug_linux.sh
+    3. Premi INVIO e segui le istruzioni
+
+  COSA VIENE PRESERVATO:
+    + Tutte le conversazioni salvate
+    + branding.yaml (personalizzazione)
+    + Configurazioni YAML (modelli, server, privacy)
+    + API keys e secrets
+
+  COSA VIENE AGGIORNATO:
+    > Codice applicativo (app.py, moduli)
+    > Dipendenze Python
+    > Script installer
+
+  NOTA: un backup automatico delle conversazioni viene
+  salvato in ~/DeepAiUG_backup_conversations prima
+  di ogni aggiornamento.
+
+
+COME USCIRE DA DEEPAIUG
+------------------------------------------------------------
+
+  WINDOWS
+    1. Chiudi la finestra del terminale (o premi Ctrl+C)
+       Il browser puoi lasciarlo aperto o chiuderlo liberamente.
+    2. Ollama resta attivo in background (normale).
+       Per fermarlo completamente:
+       - Cerca l'icona della pecora in basso a destra
+         nella barra di Windows (system tray)
+       - Tasto destro -> Quit
+
+  MAC
+    1. Torna nel Terminale e premi Ctrl+C
+       Il browser puoi lasciarlo aperto o chiuderlo liberamente.
+    2. Ollama resta attivo nella menu bar in alto.
+       Per fermarlo completamente:
+       - Clicca sull'icona Ollama nella barra in alto
+       - Scegli "Quit Ollama"
+
+  LINUX
+    1. Torna nel terminale e premi Ctrl+C
+       Il browser puoi lasciarlo aperto o chiuderlo liberamente.
+    2. Per fermare Ollama completamente:
+       - Apri un nuovo terminale e scrivi: pkill ollama
+       - Oppure usa il system tray se disponibile
+
+  NOTA: non e' necessario fermare Ollama ogni volta.
+  Puoi lasciarlo attivo in background — consuma pochissime
+  risorse quando non elabora richieste.
+
+
 ============================================================
   Sito: https://deepaiug.vercel.app
   GitHub: https://github.com/EnzoGitHub27/datapizza-streamlit-interface
