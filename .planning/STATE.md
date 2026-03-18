@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-01-PLAN.md — swarm foundation (ProcessingContext + BaseSwarmAgent)
-last_updated: "2026-03-18T17:27:36.176Z"
+stopped_at: Completed 02-02-PLAN.md — agent migration to BaseSwarmAgent + route_with_context()
+last_updated: "2026-03-18T17:33:12.900Z"
 last_activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-stack-cleanup P01 | 2 | 2 tasks | 3 files |
 | Phase 01-stack-cleanup P02 | 2min | 1 tasks | 1 files |
 | Phase 02-swarm-architecture P01 | 4min | 1 tasks | 5 files |
+| Phase 02-swarm-architecture P02 | 3min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,9 @@ Recent decisions affecting current work:
 - [Phase 02-swarm-architecture]: ProcessingContext is a @dataclass with field(default_factory=...) for mutable defaults; domain-neutral (no accounting fields)
 - [Phase 02-swarm-architecture]: BaseSwarmAgent is purely additive: extends BaseAccountingAgent + adds abstract process(); TYPE_CHECKING guard prevents circular imports
 - [Phase 02-swarm-architecture]: conftest.py added to fix pytest sys.path when /bin/python 3.10 is pytest interpreter vs pyenv 3.13 project Python
+- [Phase 02-swarm-architecture]: FatturazioneAgent.process() calls analizza_xml_bytes() (non-LLM deterministic path) for pipeline use; LLM commentary is a separate step
+- [Phase 02-swarm-architecture]: route_with_context() delegates to route() for keyword matching — single source of truth for routing rules
+- [Phase 02-swarm-architecture]: _PlaceholderSwarmAgent defined at module level in orchestrator.py — concrete no-op BaseSwarmAgent for domains not yet implemented
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T17:27:36.170Z
-Stopped at: Completed 02-01-PLAN.md — swarm foundation (ProcessingContext + BaseSwarmAgent)
+Last session: 2026-03-18T17:33:12.895Z
+Stopped at: Completed 02-02-PLAN.md — agent migration to BaseSwarmAgent + route_with_context()
 Resume file: None

@@ -13,7 +13,7 @@ Milestone 1 transforms the existing brownfield Streamlit/Python accounting app i
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Stack Cleanup** - Remove dead dependencies and establish a clean technical baseline (completed 2026-03-18)
-- [ ] **Phase 2: Swarm Architecture** - Implement ProcessingContext and BaseSwarmAgent foundation
+- [x] **Phase 2: Swarm Architecture** - Implement ProcessingContext and BaseSwarmAgent foundation (completed 2026-03-18)
 - [ ] **Phase 3: Client Folder Scanner** - Enable folder selection and automatic file classification from UI
 - [ ] **Phase 4: Pipeline A Ingestion** - Ingest invoices and bank statements into reviewable bookkeeping entries
 
@@ -43,7 +43,7 @@ Plans:
   2. A ProcessingContext instance can be passed between two agents sequentially, accumulating results from each step
   3. The existing fatturazione_agent, memoria_agent, and orchestrator work correctly through the Streamlit UI after migration to BaseSwarmAgent
   4. The orchestrator routes a user chat message to the correct agent using the new pattern without regression
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 02-01-PLAN.md — Create swarm/ package with ProcessingContext dataclass and BaseSwarmAgent ABC
@@ -78,6 +78,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Stack Cleanup | 2/2 | Complete   | 2026-03-18 |
-| 2. Swarm Architecture | 1/2 | In Progress|  |
+| 2. Swarm Architecture | 2/2 | Complete   | 2026-03-18 |
 | 3. Client Folder Scanner | 0/TBD | Not started | - |
 | 4. Pipeline A Ingestion | 0/TBD | Not started | - |
