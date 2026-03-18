@@ -46,17 +46,30 @@ fornitore, potresti ottenere risposte diverse:
 La varianza non e' accettabile. Su 200 fatture annue dello stesso tipo, vuoi
 sempre la stessa risposta — quella giusta per quel cliente specifico.
 
-### 1.2 La soluzione: chiedi una volta, salva la risposta
+### 1.2 La soluzione: impara dai dati storici, poi correggi se serve
 
 AccountantNanoBot separa il momento della decisione dal momento dell'applicazione:
 
-1. **Prima volta:** il sistema propone la regola, il commercialista valida.
-2. **Ogni volta successiva:** la regola validata viene applicata deterministicamente
-   in Python — zero LLM, zero varianza.
+1. **Apprendimento dai dati storici:** il sistema indicizza l'intera cartella
+   del cliente — fatture degli anni precedenti gia' contabilizzate, registrazioni
+   esistenti, documenti aziendali. Da questi dati deduce le regole gia' applicate
+   in passato per quel cliente (quale aliquota IVA e' stata usata per le fatture
+   di telefonia, come e' stata classificata quella tipologia di spesa, ecc.).
 
-La prima volta costa attenzione. Le 199 volte successive costano zero.
-I concorrenti che delegano ogni calcolo all'LLM pagano il costo di attenzione
-ogni volta, e non hanno garanzia di coerenza.
+2. **Proposta basata sulla storia:** quando arriva una nuova fattura, il sistema
+   propone la registrazione coerente con quanto gia' fatto in passato per quel
+   cliente — non una risposta generica dell'LLM, ma la regola estratta dai suoi
+   dati reali.
+
+3. **Correzione e validazione:** se la proposta e' sbagliata (o se e' la prima
+   volta che quel tipo di fattura compare), il commercialista corregge.
+   La correzione viene salvata come override e applicata deterministicamente
+   a tutte le fatture successive dello stesso tipo — zero LLM, zero varianza.
+
+La prima volta (o la prima correzione) costa attenzione. Ogni volta successiva
+costa zero. I concorrenti che delegano ogni calcolo all'LLM pagano il costo
+di attenzione ogni volta, e non hanno garanzia di coerenza tra una fattura
+e l'altra dello stesso fornitore.
 
 ---
 
