@@ -79,7 +79,7 @@ def extract_text_from_txt(file_bytes: bytes, encoding: str = "utf-8") -> str:
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
     try:
-        from PyPDF2 import PdfReader
+        from pypdf import PdfReader
 
         reader = PdfReader(io.BytesIO(file_bytes))
         text_parts = []
@@ -95,7 +95,7 @@ def extract_text_from_pdf(file_bytes: bytes) -> str:
         return "\n\n".join(text_parts)
 
     except ImportError:
-        return "[Errore: PyPDF2 non installato]"
+        return "[Errore: pypdf non installato. Installa con: pip install pypdf>=4.0.0]"
     except Exception as e:
         return f"[Errore estrazione PDF: {e}]"
 
