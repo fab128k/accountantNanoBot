@@ -9,8 +9,11 @@ from __future__ import annotations
 import re
 from typing import Dict, Optional, Tuple, TYPE_CHECKING
 
+from swarm.base import BaseSwarmAgent
+
 if TYPE_CHECKING:
     from agents.base_agent import BaseAccountingAgent
+    from swarm.context import ProcessingContext
 
 
 # ============================================================================
@@ -52,6 +55,16 @@ _ROUTING_RULES: list[Tuple[list[str], str]] = [
 ]
 
 _DEFAULT_AGENT = "memoria"
+
+
+class _PlaceholderSwarmAgent(BaseSwarmAgent):
+    """
+    Agente placeholder per domini non ancora implementati.
+    process() ritorna il contesto invariato.
+    """
+
+    def process(self, context: "ProcessingContext") -> "ProcessingContext":
+        return context
 
 
 class Orchestrator:
@@ -114,6 +127,36 @@ class Orchestrator:
 
         raise ValueError("Nessun agente registrato nell'orchestratore")
 
+    def route_with_context(self, context: "ProcessingContext") -> "ProcessingContext":
+        """
+        Instrada un ProcessingContext all'agente appropriato.
+
+        Usa lo stesso algoritmo keyword-based di route(), basandosi su
+        context.metadata.get('user_message', '') per determinare l'agente.
+        Chiama agent.process(context) sull'agente selezionato.
+
+        Non solleva eccezioni: errori aggiunti a context.errors.
+
+        Args:
+            context: ProcessingContext con metadati per il routing
+
+        Returns:
+            ProcessingContext aggiornato dall'agente
+        """
+        user_message = context.metadata.get('user_message', '')
+        try:
+            agent_id, agent = self.route(user_message)
+            context.metadata['routed_to'] = agent_id
+            if hasattr(agent, 'process'):
+                context = agent.process(context)
+            else:
+                context.errors.append(
+                    f"Agent '{agent_id}' does not implement process()"
+                )
+        except Exception as e:
+            context.errors.append(f"Errore routing: {e}")
+        return context
+
     def get_agent(self, agent_id: str) -> Optional["BaseAccountingAgent"]:
         """Ritorna un agente specifico per ID."""
         return self._agents.get(agent_id)
@@ -145,7 +188,6 @@ def build_default_orchestrator(
     from config.constants import DEFAULT_MODEL, DEFAULT_AGENT_TEMPERATURE
     from agents.fatturazione_agent import FatturazioneAgent
     from agents.memoria_agent import MemoriaAgent
-    from agents.base_agent import BaseAccountingAgent
 
     if models is None:
         models = {}
@@ -173,7 +215,7 @@ def build_default_orchestrator(
         )
     )
 
-    # Agenti placeholder (usano BaseAccountingAgent con system prompt specializzato)
+    # Agenti placeholder (usano _PlaceholderSwarmAgent con system prompt specializzato)
     _PLACEHOLDER_AGENTS = {
         "iva": (
             "Agente IVA",
@@ -211,7 +253,7 @@ riconciliazione dei conti. Ogni registrazione deve essere bilnciata.""",
     for agent_id, (name, prompt) in _PLACEHOLDER_AGENTS.items():
         orchestrator.register_agent(
             agent_id,
-            BaseAccountingAgent(
+            _PlaceholderSwarmAgent(
                 name=name,
                 model=get_model(agent_id),
                 system_prompt=prompt,
