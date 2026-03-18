@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-18T16:49:55.781Z"
+stopped_at: Completed 02-01-PLAN.md — swarm foundation (ProcessingContext + BaseSwarmAgent)
+last_updated: "2026-03-18T17:27:36.176Z"
 last_activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
   percent: 0
 ---
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01-stack-cleanup P01 | 2 | 2 tasks | 3 files |
 | Phase 01-stack-cleanup P02 | 2min | 1 tasks | 1 files |
+| Phase 02-swarm-architecture P01 | 4min | 1 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,9 @@ Recent decisions affecting current work:
 - [Phase 01-stack-cleanup]: SentenceTransformerEmbeddingFunction from chromadb.utils used — ChromaDB handles embedding calls transparently for add/query
 - [Phase 01-stack-cleanup]: Missing sentence-transformers raises ImportError (not silent fallback) — RAG without multilingual embeddings is non-functional for Italian text
 - [Phase 01-stack-cleanup]: Collection metadata stores embedding_model key to detect incompatible existing collections and trigger silent recreation
+- [Phase 02-swarm-architecture]: ProcessingContext is a @dataclass with field(default_factory=...) for mutable defaults; domain-neutral (no accounting fields)
+- [Phase 02-swarm-architecture]: BaseSwarmAgent is purely additive: extends BaseAccountingAgent + adds abstract process(); TYPE_CHECKING guard prevents circular imports
+- [Phase 02-swarm-architecture]: conftest.py added to fix pytest sys.path when /bin/python 3.10 is pytest interpreter vs pyenv 3.13 project Python
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T16:49:55.772Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-swarm-architecture/02-CONTEXT.md
+Last session: 2026-03-18T17:27:36.170Z
+Stopped at: Completed 02-01-PLAN.md — swarm foundation (ProcessingContext + BaseSwarmAgent)
+Resume file: None

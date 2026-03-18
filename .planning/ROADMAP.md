@@ -43,7 +43,7 @@ Plans:
   2. A ProcessingContext instance can be passed between two agents sequentially, accumulating results from each step
   3. The existing fatturazione_agent, memoria_agent, and orchestrator work correctly through the Streamlit UI after migration to BaseSwarmAgent
   4. The orchestrator routes a user chat message to the correct agent using the new pattern without regression
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 02-01-PLAN.md — Create swarm/ package with ProcessingContext dataclass and BaseSwarmAgent ABC
@@ -78,6 +78,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Stack Cleanup | 2/2 | Complete   | 2026-03-18 |
-| 2. Swarm Architecture | 0/2 | Planning complete | - |
+| 2. Swarm Architecture | 1/2 | In Progress|  |
 | 3. Client Folder Scanner | 0/TBD | Not started | - |
 | 4. Pipeline A Ingestion | 0/TBD | Not started | - |

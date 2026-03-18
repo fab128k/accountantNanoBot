@@ -14,8 +14,8 @@
 
 ### Swarm Architecture
 
-- [ ] **SWARM-01**: Esiste `swarm/context.py` con classe `ProcessingContext` che aggrega stato condiviso tra agenti (cliente corrente, file in elaborazione, risultati intermedi, errori)
-- [ ] **SWARM-02**: Esiste `swarm/base.py` con classe `BaseSwarmAgent` che definisce l'interfaccia standard per gli agenti (metodo `process(context: ProcessingContext) -> ProcessingContext`)
+- [x] **SWARM-01**: Esiste `swarm/context.py` con classe `ProcessingContext` che aggrega stato condiviso tra agenti (cliente corrente, file in elaborazione, risultati intermedi, errori)
+- [x] **SWARM-02**: Esiste `swarm/base.py` con classe `BaseSwarmAgent` che definisce l'interfaccia standard per gli agenti (metodo `process(context: ProcessingContext) -> ProcessingContext`)
 - [ ] **SWARM-03**: Gli agenti esistenti (fatturazione_agent, memoria_agent, orchestrator) sono migrati al pattern BaseSwarmAgent mantenendo compatibilità con l'UI Streamlit esistente
 
 ### Client Folder Scanner
@@ -75,8 +75,8 @@
 | STACK-02 | Phase 1 | Complete |
 | STACK-03 | Phase 1 | Complete |
 | STACK-04 | Phase 1 | Complete |
-| SWARM-01 | Phase 2 | Pending |
-| SWARM-02 | Phase 2 | Pending |
+| SWARM-01 | Phase 2 | Complete |
+| SWARM-02 | Phase 2 | Complete |
 | SWARM-03 | Phase 2 | Pending |
 | SCAN-01 | Phase 3 | Pending |
 | SCAN-02 | Phase 3 | Pending |
