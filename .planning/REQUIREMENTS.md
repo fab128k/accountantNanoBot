@@ -7,9 +7,9 @@
 
 ### Stack Cleanup
 
-- [ ] **STACK-01**: Il sistema usa solo openai SDK nativo per le chiamate LLM (LangChain rimosso da requirements.txt e da base_agent.py)
-- [ ] **STACK-02**: SQLAlchemy rimosso da requirements.txt (non era usato; sqlite3 nativo rimane)
-- [ ] **STACK-03**: PyPDF2 sostituito con pypdf>=4.0.0 in requirements.txt e in tutti i file che lo importano
+- [x] **STACK-01**: Il sistema usa solo openai SDK nativo per le chiamate LLM (LangChain rimosso da requirements.txt e da base_agent.py)
+- [x] **STACK-02**: SQLAlchemy rimosso da requirements.txt (non era usato; sqlite3 nativo rimane)
+- [x] **STACK-03**: PyPDF2 sostituito con pypdf>=4.0.0 in requirements.txt e in tutti i file che lo importano
 - [ ] **STACK-04**: sentence-transformers>=3.0.0 aggiunto a requirements.txt; ChromaDB configurato per usare il modello `paraphrase-multilingual-MiniLM-L12-v2` per embedding multilingua
 
 ### Swarm Architecture
@@ -71,9 +71,9 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STACK-01 | Phase 1 | Pending |
-| STACK-02 | Phase 1 | Pending |
-| STACK-03 | Phase 1 | Pending |
+| STACK-01 | Phase 1 | Complete |
+| STACK-02 | Phase 1 | Complete |
+| STACK-03 | Phase 1 | Complete |
 | STACK-04 | Phase 1 | Pending |
 | SWARM-01 | Phase 2 | Pending |
 | SWARM-02 | Phase 2 | Pending |

@@ -28,7 +28,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. The app starts and all existing pages load without import errors after the dependency changes
   3. LLM calls from base_agent.py use openai SDK directly (`client.chat.completions.create`) with no LangChain wrapper
   4. ChromaDB accepts Italian text and returns semantically relevant results using the multilingual MiniLM embedding model
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 01-01-PLAN.md — Remove dead dependencies from requirements.txt and replace PyPDF2 with pypdf in all imports
@@ -73,7 +73,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Stack Cleanup | 0/2 | Planning complete | - |
+| 1. Stack Cleanup | 1/2 | In Progress|  |
 | 2. Swarm Architecture | 0/TBD | Not started | - |
 | 3. Client Folder Scanner | 0/TBD | Not started | - |
 | 4. Pipeline A Ingestion | 0/TBD | Not started | - |
