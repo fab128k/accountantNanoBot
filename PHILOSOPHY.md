@@ -1,292 +1,238 @@
 # PHILOSOPHY.md
-## Perché DeepAiUG fa le scelte che fa
+## Perche' AccountantNanoBot fa le scelte che fa
 
-**Progetto:** DeepAiUG Interface  
-**Autore:** Vincenzo Iodice (EnzoGitHub27)  
-**Ultima revisione:** 2026-02-23
-
----
-
-> *"Non semplifica il pensare, ma lo allena."*
-> — Carmelo Quartarone
+**Progetto:** AccountantNanoBot
+**Ultima revisione:** 2026-03-18
 
 ---
 
-## Introduzione — Una domanda prima del codice
+## La domanda fondamentale
 
-Prima di spiegare cosa fa DeepAiUG, vale la pena spiegare **perché** lo fa in questo modo
-e non in un altro.
+In contabilita' e fiscalita', cosa deve fare l'AI e cosa deve fare il commercialista?
 
-Ogni scelta di design in questo progetto nasce da una domanda:
-*chi deve fare il lavoro cognitivo — la macchina o l'umano?*
+La risposta di questo progetto:
 
-La risposta di DeepAiUG è sempre la stessa: **l'umano**.
-Non perché la macchina non sia capace, ma perché il senso — la comprensione reale
-di un problema e le sue conseguenze — non è delegabile senza perdere qualcosa
-di essenziale.
+- **L'AI fa** la parte meccanica, ripetitiva, soggetta a regole codificabili:
+  parsing dei file, calcoli IVA, registrazioni in partita doppia, scadenzario.
+- **Il commercialista fa** la parte che richiede giudizio: validare il profilo
+  fiscale del cliente, confermare ogni registrazione, prendere decisioni sugli
+  edge case.
 
-Questo documento spiega le basi teoriche di questa scelta,
-in modo accessibile a chiunque voglia capire il progetto in profondità.
-
----
-
-## Parte 1 — Il problema fondamentale: l'AI produce significato, non senso
-
-### 1.1 Capitale semantico (Luciano Floridi)
-
-Il filosofo Luciano Floridi ha introdotto il concetto di **capitale semantico**:
-il patrimonio di significati, interpretazioni e conoscenze che un individuo
-o una comunità costruisce nel tempo attraverso l'esperienza.
-
-L'AI può produrre **significato** — testi coerenti, risposte plausibili,
-argomentazioni ben costruite. Ma il **senso** — la comprensione di cosa
-quella risposta significa *per me*, nelle mie circostanze, con le mie responsabilità
-— lo costruisce solo l'umano.
-
-**Conseguenza per DeepAiUG:**
-L'interfaccia non deve cercare di costruire senso al posto dell'utente.
-Deve aiutare l'utente a costruirlo meglio.
-
-### 1.2 Il Lettore Modello (Umberto Eco — Lector in Fabula)
-
-Umberto Eco ha osservato che ogni testo presuppone un **Lettore Modello**:
-un destinatario implicito con certe conoscenze, certi valori, certi obiettivi.
-Quando leggi un testo, stai anche leggendo le assunzioni che l'autore ha fatto su di te.
-
-Applicato all'AI: ogni risposta generata presuppone silenziosamente
-**chi sei, cosa vuoi, in quale contesto stai decidendo**.
-Queste assunzioni sono invisibili — ma orientano profondamente il contenuto.
-
-**Conseguenza per DeepAiUG:**
-Il bottone ⚠️ Limiti include la categoria "Limiti del Modello":
-*chi è il Lettore Implicito presupposto da questa risposta?*
-Il bottone 🪞 Rifletti include la dimensione "Destinatario Implicito":
-*per chi stai davvero chiedendo questa risposta?*
-
-### 1.3 L'asimmetria AI-umano (Carmelo Quartarone — seguendo Floridi)
-
-Carmelo Quartarone ha chiarito con precisione la natura dell'asimmetria:
-
-> "L'AI possiede capacità computazionali enormi ma è priva della percezione del senso.
-> L'epistemologia umana è intrecciata a rischio, responsabilità, conseguenze —
-> il senso non è delegabile."
-
-L'AI può estrarre, ordinare e confrontare interpretazioni in modo probabilistico.
-Può approssimare "cosa farebbero molti umani in situazioni simili".
-Ma non può sapere cosa è giusto *per te*, *in questo contesto*, *con queste conseguenze*.
-
-La delega all'AI ha senso solo quando il dominio è **stabile e circoscritto** —
-quando cioè le variabili sono poche, note e prevedibili.
-Quando il dominio è instabile, complesso o ad alto impatto umano,
-la delega non è efficienza: è rinuncia alla responsabilità.
-
-> "Il rischio non è che la macchina sbagli, ma che l'umano rinunci
-> a capire perché sta scegliendo."
-> — Carmelo Quartarone
+Questa divisione non e' ovvia. La maggior parte dei software AI contabili
+prova a farla fare tutta all'AI. Questo e' il problema che AccountantNanoBot
+cerca di risolvere.
 
 ---
 
-## Parte 2 — Il problema specifico: l'ottimizzazione senza scopo
+## Parte 1 — Il problema del probabilismo nei calcoli fiscali
 
-### 2.1 Il Teleology Gate (Carmelo Quartarone — febbraio 2026)
+### 1.1 I modelli LLM sono probabilistici per definizione
 
-Carmelo Quartarone ha documentato un comportamento sistematico dei modelli AI:
-la capacità di produrre risposte **localmente corrette ma teleologicamente inutili**.
+Un LLM risponde a una domanda producendo il testo statisticamente piu' probabile
+dato il contesto. Per molti usi questo e' sufficiente. Per la contabilita' no.
 
-L'esempio concreto: chiedi all'AI se andare all'autolavaggio in auto o a piedi
-(distanza: 200 piedi). L'AI risponde "vai a piedi — risparmia tempo e carburante."
-La risposta è logicamente coerente. Ma manca completamente il punto:
-**senza l'auto, il lavaggio non avviene**.
+**Esempio concreto:**
+Una fattura del fornitore X per telefonia. IVA detraibile al 50% secondo la
+regola generale italiana (art. 19-bis1, lettera g), DPR 633/72).
+Ma il cliente ha documentazione che dimostra uso 100% professionale del
+telefono — quindi IVA detraibile al 100%.
 
-Il problema non è la mancanza di conoscenza. È la mancanza di un
-**vincolo teleologico**: lo scopo reale dell'azione non governa la risposta.
-L'AI ottimizza localmente (efficienza dello spostamento) perdendo di vista
-il fine globale (lavare l'auto).
+Se chiedi a un LLM ogni volta che elabori una fattura di telefonia dello stesso
+fornitore, potresti ottenere risposte diverse:
+- "50% detraibile" (regola generale)
+- "dipende dall'uso" (risposta vaga)
+- "100% se documentato" (risposta corretta per questo cliente)
 
-Quartarone propone il **Teleology Gate**: un punto di controllo architetturale
-che rende lo scopo un vincolo operativo, non un semplice suggerimento.
+La varianza non e' accettabile. Su 200 fatture annue dello stesso tipo, vuoi
+sempre la stessa risposta — quella giusta per quel cliente specifico.
 
-**Come DeepAiUG risponde:**
-DeepAiUG implementa un **Teleology Gate lato umano**.
-Non un secondo agente AI che verifica automaticamente ogni risposta —
-questo toglierebbe attrito invece di restituirlo.
-I bottoni socratici sono il Gate: strumenti che l'umano attiva quando vuole
-verificare se la risposta serve davvero il suo scopo reale.
+### 1.2 La soluzione: chiedi una volta, salva la risposta
 
-In particolare:
-- 🎭 **Confuta Livello 2** — "se le premesse fondanti fossero false, cosa regge?"
-- 🤔 **Assunzioni** — distingue Fatti, Inferenze e Valutazioni + Test della Premessa
-- ⚠️ **Limiti** — include i Limiti di Dominio (dove la delega è rischiosa)
+AccountantNanoBot separa il momento della decisione dal momento dell'applicazione:
 
-### 2.2 Il Sovrascopo (Cinzia Ligas — AI Semiology, 2026)
+1. **Prima volta:** il sistema propone la regola, il commercialista valida.
+2. **Ogni volta successiva:** la regola validata viene applicata deterministicamente
+   in Python — zero LLM, zero varianza.
 
-Cinzia Ligas ha identificato un problema più profondo e più lento:
-il **sovrascopo**.
-
-Ogni risposta dell'AI opera su due livelli:
-- **Scopo** — la risposta alla domanda specifica (adeguatezza locale)
-- **Sovrascopo** — la cornice interpretativa che quella risposta costruisce
-  e che orienterà le domande future (direzione simbolica nel tempo)
-
-Il sovrascopo è invisibile e si accumula silenziosamente.
-Una sessione di 5 domande può sedimentare un frame interpretativo
-che l'utente non ha mai scelto consapevolmente — e da cui continuerà
-a guardare il problema senza saperlo.
-
-> "Governare l'AI non significa solo ottimizzare lo scopo,
-> ma vigilare sul sovrascopo: la direzione simbolica in cui,
-> risposta dopo risposta, viene condotta la nostra semiosfera."
-> — Cinzia Ligas
-
-**Come DeepAiUG risponde:**
-La **Mappa Sessione (F2 — v1.10.0)** è la risposta al sovrascopo.
-Rende visibile la cornice invisibile che si è sedimentata durante la sessione —
-non per giudicarla, ma per restituire all'utente la consapevolezza
-da cui scegliere se continuare a guardare da lì o esplorare prospettive diverse.
+La prima volta costa attenzione. Le 199 volte successive costano zero.
+I concorrenti che delegano ogni calcolo all'LLM pagano il costo di attenzione
+ogni volta, e non hanno garanzia di coerenza.
 
 ---
 
-## Parte 3 — La scelta di design centrale: restituire attrito
+## Parte 2 — La gerarchia delle regole
 
-### 3.1 Cosa significa "restituire attrito"
+Il motore di regole e' il cuore del vantaggio competitivo del progetto.
 
-> "I bottoni socratici non migliorano l'output. Restituiscono attrito."
-> — Carmelo Quartarone, *L'affordance non è un destino* (febbraio 2026)
+### Override chain
 
-L'attrito cognitivo è la resistenza che si incontra quando si è costretti
-a pensare invece di accettare passivamente una risposta.
-Le interfacce AI standard rimuovono l'attrito: rendono facile accettare,
-difficile mettere in discussione.
+```
+Livello 1 — Regola globale
+  Legge italiana (hard-coded in Python)
+  Esempio: telefonia → IVA 50% detraibile, costo 80% deducibile
 
-DeepAiUG fa la scelta opposta: **reintroduce attrito intenzionalmente**.
-Non per rendere l'interfaccia difficile da usare,
-ma per impedire che la facilità d'uso si trasformi in rinuncia al pensiero critico.
+Livello 2 — Regola di categoria
+  Derivata da ATECO / tipo attivita'
+  Esempio: agente di commercio (ATECO 4619) → auto costo 80% deducibile
 
-### 3.2 Perché non un validatore automatico
+Livello 3 — Override specifico cliente
+  Documentato e validato dal commercialista, salvato in SQLite
+  Esempio: cliente con documentazione uso 100% professionale telefono
+           → IVA 100% detraibile
+```
 
-Nel processo di sviluppo di DeepAiUG v1.9.2 è stata valutata
-un'alternativa: un **Validatore Epistemologico automatico** —
-un secondo agente AI che analizza la risposta del primo
-e assegna punteggi di consistenza (es. "Consistenza: 7/10").
+Ogni override e' tracciato: chi lo ha approvato, quando, su quale base documentale.
+Non e' un'impostazione arbitraria — e' una decisione professionale registrata.
 
-È stata **rifiutata**. Motivo:
+### Perche' non un "AI che impara"
 
-Un punteggio automatico generato da AI induce delega del giudizio critico.
-L'utente vede "7/10" e smette di chiedersi perché.
-È esattamente il "reale impoverito" descritto da Cinzia Ligas:
-la risposta sembra utile, ma ha già fatto il lavoro cognitivo al posto tuo.
+Si potrebbe immaginare un sistema che impara autonomamente dagli override
+del commercialista, senza che lui debba confermare esplicitamente ogni regola.
 
-Come dice Carmelo Quartarone: *"Il test è l'uomo e la sua capacità di dare senso."*
+Abbiamo scelto di non farlo, per tre ragioni:
 
-I bottoni socratici di DeepAiUG non danno voti.
-Fanno domande. L'utente decide cosa farsene.
+1. **Responsabilita' professionale.** Il commercialista firma le dichiarazioni
+   fiscali. Ha bisogno di sapere esattamente quale regola si applica e perche'.
+   Un sistema che "impara in autonomia" crea opacita' inaccettabile in un contesto
+   di responsabilita' legale.
 
-### 3.3 La libertà di scelta come valore fondamentale
+2. **Edge case fiscali.** Le eccezioni alle regole fiscali italiane sono numerose
+   e dipendono da dettagli (tipo di attivita', documentazione disponibile,
+   interpretazioni dell'Agenzia delle Entrate). Un sistema che generalizza
+   automaticamente dagli esempi rischia di applicare regole sbagliate a casi
+   apparentemente simili ma diversi.
 
-DeepAiUG non obbliga nessuno ad usare i bottoni socratici.
-Il toggle modalità permette di disattivarli completamente (modalità 🚀 Veloce).
-La Mappa Sessione può essere disattivata.
-
-Questa libertà non è una concessione alla pigrizia.
-È coerente con il principio fondamentale:
-**l'attrito ha valore solo se è scelto, non se è imposto**.
-Un utente che sa cosa sta rinunciando quando disattiva i bottoni
-sta già esercitando un giudizio consapevole.
-
----
-
-## Parte 4 — La Mappa Sessione: rendere visibile il frame invisibile
-
-### 4.1 Cosa è un "frame" e perché è invisibile
-
-Un frame (o cornice interpretativa) è l'insieme di assunzioni implicite
-che usi per guardare un problema.
-Non lo scegli consapevolmente — si forma mentre pensi,
-influenzato dalle domande che fai, dalle risposte che ricevi,
-dall'ordine in cui esplori le informazioni.
-
-L'AI accelera questo processo: ogni risposta che ricevi
-rinforza certi concetti, certe categorie, certi criteri di valutazione.
-In una sessione di 5 domande puoi costruire un frame solido
-senza mai averlo scelto.
-
-### 4.2 Come la Mappa Sessione lo rende visibile
-
-La Mappa Sessione analizza le domande della sessione e mostra:
-
-1. **Frame dominante** — la cornice implicita emersa
-2. **Connessione domande → frame** — come ogni domanda ha contribuito
-3. **Frame non esplorati** — corridoi alternativi non ancora percorsi
-
-Non giudica. Non raccomanda. Non dice "stai sbagliando".
-Mostra solo: *da qui stai guardando — ci sono anche altre prospettive.*
-
-### 4.3 La scelta filosofica sulla costruzione della mappa
-
-La mappa viene costruita dall'AI **solo su richiesta esplicita dell'utente**.
-Non si aggiorna automaticamente in background senza che l'utente lo sappia.
-
-Questo è coerente con il principio di Quartarone:
-la delega ha senso quando il dominio è circoscritto
-(analizzare le domande di una sessione lo è)
-**ma il momento della delega deve restare in mano all'umano**.
-
-Il semplice gesto di premere "Mostra mappa sessione" è già
-un atto metacognitivo: *voglio capire da dove sto guardando questo problema.*
-Questo attrito è intenzionale.
+3. **Audit trail.** In caso di verifica fiscale, devi poter spiegare ogni
+   registrazione. "Il sistema l'ha imparato da solo" non e' una risposta
+   accettabile davanti all'Agenzia delle Entrate.
 
 ---
 
-## Parte 5 — La visione HSCI
+## Parte 3 — Il commercialista come esperto, non come operatore dati
 
-### 5.1 Hybrid Semantic Collective Intelligence
+### Il problema attuale
 
-Carmelo Quartarone ha definito DeepAiUG come "il primo passo" verso
-la **Hybrid Semantic Collective Intelligence (HSCI)**:
+Il lavoro di un commercialista e' per la maggior parte operativo e ripetitivo:
+aprire file XML, verificare i dati, registrare la fattura nel gestionale,
+controllare che l'IVA sia giusta. Questo lavoro non richiede la competenza
+professionale del commercialista — richiede attenzione e tempo.
 
-> "Un processo socio-tecnico in cui l'agency interpretativa umana
-> e le infrastrutture semantiche basate su AI co-evolvono per mediare
-> l'ambiguità, preservare il pluralismo e sostenere nel tempo
-> la costruzione collettiva del senso."
+Il risultato e' che il commercialista passa piu' tempo a fare data entry
+che a fare consulting. Il valore professionale — interpretare situazioni
+complesse, pianificare fiscalmente, consigliare il cliente — resta inespresso
+perche' non c'e' tempo.
 
-HSCI non è un prodotto. È una direzione:
-verso sistemi in cui umani e AI non si sostituiscono
-ma si potenziano reciprocamente, mantenendo l'umano
-al centro della costruzione del senso.
+### La soluzione di AccountantNanoBot
 
-### 5.2 DeepAiUG come dispositivo metacognitivo individuale
+Il sistema gestisce tutta la parte meccanica:
+- Parsing automatico dei file FatturaPA dalla cartella cliente
+- Proposta di registrazione in partita doppia
+- Calcolo IVA con applicazione dell'override chain
+- Scadenzario automatico
+- Alert preventivi su soglie (regime forfettario, liquidazioni IVA)
 
-La Fase 1 di DeepAiUG (v1.8.0 → v1.10.0) costruisce
-quello che Quartarone chiama un **dispositivo metacognitivo individuale**:
-uno strumento che non risponde al posto tuo,
-ma ti allena a rispondere meglio.
+Il commercialista interviene dove serve la sua competenza:
+- Validare il profilo fiscale del cliente (una volta per cliente)
+- Confermare ogni registrazione proposta (review veloce, non data entry)
+- Gestire gli edge case che il sistema non sa classificare
+- Usare la chat advisory per rispondere a domande complesse del cliente
 
-I 10 moduli HSCI identificati da Quartarone sono la roadmap teorica.
-Ogni versione di DeepAiUG implementa uno o più di questi moduli
-in modo pratico e verificabile.
+### La conferma umana obbligatoria non e' un ostacolo
 
----
+Ogni registrazione proposta dal sistema richiede conferma prima di essere
+salvata. Questa scelta viene spesso percepita come attrito inutile —
+"perche' non la salva direttamente se e' ovviamente giusta?"
 
-## Riferimenti
+E' intenzionale, per due motivi:
 
-| Autore | Contributo | Dove compare in DeepAiUG |
-|---|---|---|
-| **Luciano Floridi** | Capitale semantico, asimmetria AI-umano | Filosofia di base, tutti i bottoni |
-| **Umberto Eco** | Lector in Fabula, Lettore Modello | ⚠️ Limiti (Limiti del Modello), 🪞 Rifletti (Destinatario Implicito) |
-| **Carmelo Quartarone** | Asimmetria AI-umano, Teleology Gate, HSCI, Bottoni socratici | Architettura bottoni, Mappa Sessione, Roadmap |
-| **Cinzia Ligas** | Sovrascopo, AI Semiology, semiotica dell'AI | 🪞 Rifletti, Mappa Sessione (F2) |
-| **Valeria Lazzaroli** | Interoperabilità semantica, DCAT-AP | Export JSON-LD (F3 — v1.10.0) |
+1. **Responsabilita'.** La firma professionale e' del commercialista, non del
+   software. La conferma e' il momento in cui quella responsabilita' viene
+   esercitata consciamente.
 
-### Articoli di riferimento
-- Carmelo Quartarone, *Il Teleology Gate* (febbraio 2026)
-- Carmelo Quartarone, *L'affordance non è un destino* (febbraio 2026)
-- Carmelo Quartarone, *Hybrid Semantic Collective Intelligence* (febbraio 2026)
-- Cinzia Ligas / ARS EUROPA, *AI Semiology — la tecnica e il simbolo* (febbraio 2026)
-- Cinzia Ligas, *La biblioteca e l'algoritmo* (febbraio 2026)
-- Simone Conversano, *Perché conta cosa l'AI crede di sapere* (febbraio 2026)
+2. **Qualita' del modello.** Ogni conferma (o correzione) alimenta il profilo
+   cliente. Un sistema che salva senza review non impara dai casi in cui il
+   commercialista avrebbe corretto — e accumula errori silenziosamente.
 
 ---
 
-*Documento creato: 2026-02-23*
-*Progetto: DeepAiUG Interface — github.com/EnzoGitHub27/datapizza-streamlit-interface*
-*Community: DeepAiUG — deepaiug.it*
+## Parte 4 — Privacy e sovranita' dei dati
+
+### I dati contabili dei clienti non escono dal computer
+
+I dati di un'azienda cliente — fatture, estratti conto, bilanci, contratti —
+sono tra le informazioni piu' sensibili che esistano. Contengono informazioni
+su clienti, fornitori, margini, struttura finanziaria.
+
+AccountantNanoBot e' progettato con un principio non negoziabile:
+**questi dati non vengono mai trasmessi a servizi cloud esterni**.
+
+Tutto il processing avviene localmente:
+- LLM locale via Ollama (nessuna chiamata a OpenAI, Anthropic, Google)
+- Database SQLite sul file system locale
+- RAG con ChromaDB locale
+- Embedding con sentence-transformers in locale
+
+Le uniche eccezioni esplicite e opt-in:
+- Trasmissione fatture al SDI via intermediario abilitato (Livello 3 del revenue
+  model) — l'utente attiva questa funzione consapevolmente, i dati trasmessi
+  sono solo quelli necessari per la trasmissione
+- Conservazione sostitutiva a norma — stessa logica
+
+### Perche' non usare API cloud per avere modelli piu' potenti
+
+Un LLM cloud piu' potente produrrebbe classificazioni migliori.
+Ma richiederebbe di inviare il contenuto delle fatture dei clienti
+a server di terzi.
+
+Il compromesso non e' accettabile. La qualita' del modello migliora
+nel tempo con modelli locali sempre piu' capaci — e il principio di
+privacy rimane intatto.
+
+---
+
+## Parte 5 — Open source come scelta strategica
+
+### AGPL-3.0 non e' una scelta ideologica
+
+La licenza AGPL-3.0 e' stata scelta per ragioni pratiche:
+
+1. **Fiducia.** Un commercialista che affida i dati dei suoi clienti a un
+   software ha bisogno di poter verificare che quel software faccia quello
+   che dice. Il codice sorgente aperto e' l'unica garanzia verificabile.
+
+2. **Calcoli fiscali verificabili.** Le regole di calcolo IVA, le aliquote,
+   la logica di partita doppia devono essere ispezionabili da chiunque
+   abbia le competenze per farlo. Non e' possibile fidarsi ciecamente
+   di un black box per calcoli fiscalmente rilevanti.
+
+3. **Protezione dall'obsolescenza.** Se il progetto venisse abbandonato,
+   gli studi che lo usano possono continuare a farlo e, se necessario,
+   farlo evolvere internamente.
+
+### Il moat non e' il codice
+
+Il vantaggio competitivo non viene dal tenere il codice segreto.
+Viene da:
+- I dati normativi aggiornati (Livello 1 del revenue model)
+- La fiducia costruita con gli studi nel tempo
+- Le integrazioni SDI gia' negoziate (Livello 3)
+
+Un concorrente puo' fare fork del codice core — non puo' replicare
+questi elementi in poco tempo.
+
+---
+
+## Principi in sintesi
+
+| Principio | Conseguenza pratica |
+|---|---|
+| Calcoli deterministici | LLM mai nei calcoli fiscali, solo in chat e classificazione |
+| Chiedi una volta, applica sempre | Override chain salvato e validato, non rigenerato ogni volta |
+| Il commercialista resta esperto | Conferma umana obbligatoria su ogni registrazione |
+| Privacy non negoziabile | LLM locale, dati mai in cloud |
+| Codice ispezionabile | AGPL-3.0, calcoli verificabili da chiunque |
+
+---
+
+*AccountantNanoBot — github.com/fab128k/accountantNanoBot*
+*GNU AGPL-3.0*
