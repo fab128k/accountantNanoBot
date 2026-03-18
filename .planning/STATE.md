@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-18T18:06:24.475Z"
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-18T19:44:56.572Z"
 last_activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 0
 ---
 
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-stack-cleanup P02 | 2min | 1 tasks | 1 files |
 | Phase 02-swarm-architecture P01 | 4min | 1 tasks | 5 files |
 | Phase 02-swarm-architecture P02 | 3min | 2 tasks | 3 files |
+| Phase 03-client-folder-scanner P01 | 2min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,9 @@ Recent decisions affecting current work:
 - [Phase 02-swarm-architecture]: FatturazioneAgent.process() calls analizza_xml_bytes() (non-LLM deterministic path) for pipeline use; LLM commentary is a separate step
 - [Phase 02-swarm-architecture]: route_with_context() delegates to route() for keyword matching — single source of truth for routing rules
 - [Phase 02-swarm-architecture]: _PlaceholderSwarmAgent defined at module level in orchestrator.py — concrete no-op BaseSwarmAgent for domains not yet implemented
+- [Phase 03-client-folder-scanner]: Raw byte peek (b'FatturaElettronica' in 512 bytes) for XML classification — no lxml parse during scan, 100x faster per file
+- [Phase 03-client-folder-scanner]: scanner/ and pipeline/ have zero Streamlit imports — pure Python, fully testable without Streamlit runtime
+- [Phase 03-client-folder-scanner]: scan() returns empty ScanResult for missing/non-directory paths — no exception raised, UI layer handles error display
 
 ### Pending Todos
 
@@ -90,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T18:06:24.467Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-client-folder-scanner/03-CONTEXT.md
+Last session: 2026-03-18T19:44:56.565Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None

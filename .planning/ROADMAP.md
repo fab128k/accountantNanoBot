@@ -57,7 +57,7 @@ Plans:
   1. Given a folder path, `ClientFolderScanner` returns a structured list of files classified into categories (FatturaXML, PDF, CSV, DOCX, TXT, Altro)
   2. The user can select a client folder from the Streamlit UI (onboarding page or sidebar) and see the classified file list rendered without writing any code
   3. After scanning, Pipeline A starts automatically for FatturaXML files found — the user does not need to trigger it manually
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 03-01-PLAN.md — Create ClientFolderScanner core module and Pipeline A stub with full test coverage
@@ -83,5 +83,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Stack Cleanup | 2/2 | Complete   | 2026-03-18 |
 | 2. Swarm Architecture | 2/2 | Complete   | 2026-03-18 |
-| 3. Client Folder Scanner | 0/2 | Planning complete | - |
+| 3. Client Folder Scanner | 1/2 | In Progress|  |
 | 4. Pipeline A Ingestion | 0/TBD | Not started | - |

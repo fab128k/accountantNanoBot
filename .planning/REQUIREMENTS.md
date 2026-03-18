@@ -20,9 +20,9 @@
 
 ### Client Folder Scanner
 
-- [ ] **SCAN-01**: Esiste `scanner/client_folder_scanner.py` che data una cartella restituisce una lista strutturata di file classificati per tipo (FatturaXML, PDF, CSV, DOCX, TXT, Altro)
+- [x] **SCAN-01**: Esiste `scanner/client_folder_scanner.py` che data una cartella restituisce una lista strutturata di file classificati per tipo (FatturaXML, PDF, CSV, DOCX, TXT, Altro)
 - [ ] **SCAN-02**: L'utente può selezionare la cartella cliente da UI Streamlit (pagina onboarding o sidebar); il sistema avvia la scansione e mostra i file trovati divisi per categoria
-- [ ] **SCAN-03**: Dopo la scansione, il sistema avvia automaticamente Pipeline A per i file FatturaXML trovati senza intervento manuale dell'utente
+- [x] **SCAN-03**: Dopo la scansione, il sistema avvia automaticamente Pipeline A per i file FatturaXML trovati senza intervento manuale dell'utente
 
 ### Pipeline A — Ingestion
 
@@ -78,9 +78,9 @@
 | SWARM-01 | Phase 2 | Complete |
 | SWARM-02 | Phase 2 | Complete |
 | SWARM-03 | Phase 2 | Complete |
-| SCAN-01 | Phase 3 | Pending |
+| SCAN-01 | Phase 3 | Complete |
 | SCAN-02 | Phase 3 | Pending |
-| SCAN-03 | Phase 3 | Pending |
+| SCAN-03 | Phase 3 | Complete |
 | PIPE-01 | Phase 4 | Pending |
 | PIPE-02 | Phase 4 | Pending |
 | PIPE-03 | Phase 4 | Pending |
