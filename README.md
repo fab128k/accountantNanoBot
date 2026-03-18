@@ -1,477 +1,168 @@
-# 🧠 DeepAiUG Streamlit LLM Interface
+# AccountantNanoBot
 
-> Interfaccia Streamlit modulare per interagire con LLM locali (Ollama), remoti e cloud.
-> Progetto Open Source della community **DeepAiUG**.
+> Sistema multi-agente per la gestione contabile e fiscale italiana.
+> Punta alla cartella del cliente, poi comanda in italiano.
 
-> *"Non semplifica il pensare, ma lo allena."*
-> — Carmelo Quartarone, Innovation Senior Developer @ Cloudia Research
-
-[![Version](https://img.shields.io/badge/version-1.12.0-blue.svg)](https://github.com/EnzoGitHub27/datapizza-streamlit-interface/releases/tag/v1.12.0)
-[![Python](https://img.shields.io/badge/python-3.9+-green.svg)](https://python.org)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/fab128k/accountantNanoBot/releases)
+[![Python](https://img.shields.io/badge/python-3.10+-green.svg)](https://python.org)
 [![Streamlit](https://img.shields.io/badge/streamlit-1.28+-red.svg)](https://streamlit.io)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
 
 ---
 
-## 🚀 Installazione rapida — Nessuna competenza tecnica richiesta
+## Cos'e'
 
-| Sistema | Script | Cosa fa |
-|---|---|---|
-| 🪟 Windows 11 | `INSTALLA_DeepAiUG.bat` | Installa tutto automaticamente |
-| 🍎 Mac | `installa_deepaiug_mac.sh` | Installa tutto automaticamente |
-| 🐧 Linux | `installa_deepaiug_linux.sh` | Installa tutto automaticamente |
+AccountantNanoBot e' un assistente contabile locale che:
 
-📥 **[Scarica installer](https://github.com/EnzoGitHub27/datapizza-streamlit-interface/releases/latest)**
-🌐 **[Demo online e guida](https://deepaiug.vercel.app)**
+1. **Indicizza la cartella cliente** — FatturaPA XML, PDF, DOCX, estratti conto
+2. **Elabora in automatico** — partita doppia, piano dei conti OIC, liquidazione IVA
+3. **Risponde in chat** — "fammi la contabilita' di gennaio 2026", "genera LIPE Q1"
+4. **Genera PDF deterministici** — nessun dato sensibile esce dal computer
 
-Istruzioni dettagliate in `installer/INIZIA-QUI.txt`
+I calcoli fiscali e contabili sono in Python puro. L'LLM serve solo per la chat e la classificazione iniziale. Ogni registrazione richiede conferma umana prima di essere salvata.
 
 ---
 
-## ✨ Features
+## Features
 
-- 🤖 **Multi-provider**: Ollama (locale), Remote host, Cloud (OpenAI, Anthropic, Google)
-- 🧠 **Approccio Socratico** - Bottoni per esplorare prospettive alternative! ⭐ NEW
-- 🌊 **Streaming Responses** - Risposte token-by-token in tempo reale!
-- 💬 **Conversazioni multi-turno** con memoria del contesto
-- 💾 **Persistenza** delle conversazioni su file JSON
-- 📥 **Export** in Markdown, JSON, TXT, PDF + Batch ZIP
-- 📚 **Knowledge Base RAG** - Interroga documenti locali e wiki!
-- 🌐 **Multi-Wiki** - MediaWiki + DokuWiki support
-- 📎 **File Upload in Chat** - Allega PDF, DOCX, TXT, immagini
-- 🔐 **Privacy-First Protection** - Sistema completo protezione dati sensibili
-- 🎨 **UI moderna** con temi chiaro/scuro
-- ♻️ **Architettura modulare** - Codice organizzato in packages
+- **Parser FatturaPA** — supporto XML v1.2+ (TD01–TD29, tutti i tipi documento)
+- **Partita doppia** — piano dei conti OIC con regole personalizzabili per cliente
+- **Profilo cliente** — override chain per regole fiscali (generale → categoria ATECO → specifico cliente)
+- **Advisory chat** — LLM locale via Ollama, risponde a domande su cash flow, scadenze, ottimizzazione fiscale
+- **SQLite locale** — zero cloud, zero telemetria, dati sempre sul tuo hardware
+- **Conferma umana obbligatoria** — nessuna registrazione salvata senza review dell'operatore
 
 ---
 
-### 🏗️ Novità v1.12.0 — Architettura Sidebar
-
-- **Sidebar riorganizzata** in 5 sezioni con ordine fisso
-- **⚙️ Configurazione** chiusa di default (`st.expander`) — connessione, modello, parametri, KB
-- **💬 Conversazione**, **🗺️ Mappa**, **🧠 Socratica**, **📤 Export** — sempre visibili
-- **Banner dinamico**: la versione nel banner segue automaticamente `VERSION`
-
-### 🚀 Novità v1.11.2 — Installer multipiattaforma
-
-- Installazione automatica su **Windows 11**, **Mac** e **Linux**
-- Suggerimento modello AI in base alla RAM rilevata
-- Progress bar durante i download, log installazione automatico
-- Launcher e icona Desktop creati automaticamente
-- Nessuna competenza tecnica richiesta
-
-Vedi `installer/INIZIA-QUI.txt` per le istruzioni.
-
-### 🎨 Novità v1.11.1 — Matrix Theme
-
-- **Matrix Theme**: tema visivo completo (sfondo scuro, palette teal/green, glitch H1, scanlines CRT)
-- **Matrix rain**: animazione canvas con katakana + hex + simboli matematici
-- **Tipografia**: Cinzel (titoli), Exo 2 (contenuti), Share Tech Mono (input/bottoni)
-- **Componenti stilizzati**: chat bubbles, bottoni, input, selectbox, metric, scrollbar
-
-### 🎨 Novità v1.11.0 — Branding + UX Polish
-
-- **branding.yaml**: personalizza titolo, icona e banner senza modificare codice
-- **Nome modello + timestamp** in output socratici e mappa sessione
-- **Mappa collassabile** + bottoni "Rigenera" e "Genera mappa" su conversazioni caricate
-- **Fix parser frecce vuote**: nessuna freccia vuota con nessun modello
-
-### 📊 Novità v1.10.0 — Mappa Sessione: attrito sul pensiero (Ligas/Quartarone/Floridi)
-
-### 🧠 Novità v1.9.2 — Prompt Epistemologici Potenziati (Floridi/Eco/Quartarone)
-
-## 🆕 Novità v1.9.1 - UI Polish + Cloud Config + Privacy Granulare 🎨
-
-- **🎨 Chat Bubbles** - Rendering unificato con `markdown-it-py`, colori dark/light professionali
-- **☁️ Cloud Models YAML** - File `cloud_models.yaml` per configurare provider e modelli senza toccare il codice
-- **🔒 Privacy Granulare** - Icone specifiche (📚 Wiki, 📁 Cartella, 📎 Allegati) + warning cambio provider
-- **⚙️ Parametri Collassabili** - System Prompt, Temperature, Max messaggi in expander
-
-### Novità v1.9.0 - Socratic History + Persistence 📋
-
-Tracciamento, visualizzazione e persistenza delle esplorazioni socratiche nelle conversazioni salvate.
-
-### Novità v1.8.0 - UI Socratica Completa 🧠
-
-5 bottoni socratici organizzati in 2 sezioni + toggle modalità (Veloce/Standard/Socratico)
-
----
-
-## Novità v1.7.x - Remote Servers + Security 🖥️🔐
-
-### Remote Servers YAML
-- 3 modalità: fixed, selectable, custom_allowed
-- Lista modelli dinamica
-- File `remote_servers.yaml` opzionale
-
-### Security Settings
-- API Keys nascoste per default
-- File `security_settings.yaml`
-
----
-
-## I 5 Bottoni Socratici 🧠
-
-### La Filosofia
-> **L'AI produce significato plausibile, ma il SENSO lo costruisce l'umano.**
-
-Ispirato al "capitale semantico" (Floridi/Quartarone).
-
-**Sezione 1 - Analizza la risposta:**
-
-| Bottone | Funzione |
-|---------|----------|
-| 🔄 Alternative | 3 interpretazioni diverse |
-| 🤔 Assunzioni | Cosa si dà per scontato |
-| ⚠️ Limiti | Quando non funziona |
-| 🎭 Confuta | Avvocato del diavolo |
-
-**Sezione 2 - Sfida la domanda:**
-
-| Bottone | Funzione |
-|---------|----------|
-| 🪞 Rifletti | Meta-riflessione sulla domanda stessa |
-
-**⚠️ Limiti** ⭐ NEW
-- Identifica quando la risposta NON funziona
-- Casi limite ed eccezioni
-- Previene applicazioni errate
-
-**Le 4 capacità che DeepAiUG vuole allenare:**
-1. **Costruzione di senso** - collegare informazioni
-2. **Valutazione semantica** - capire cosa conta
-3. **Contestualizzazione** - collocare nel contesto giusto
-4. **Resistenza alla plausibilità** - non fidarsi del "suona giusto"
-
-### 🔮 Prossime Feature Socratiche
-- **v2.0.0**: Semantic Layer + Knowledge Graph
-
----
-
-## Novità v1.6.0
-
-### 🌊 Streaming Responses
-Le risposte dell'AI ora appaiono **token-by-token in tempo reale**, come in ChatGPT!
-
-**Provider supportati:**
-- ✅ **Ollama locale**: Streaming perfetto
-- ✅ **Remote host**: Streaming perfetto
-- ⚠️ **Cloud (OpenAI, etc)**: In arrivo
-
-**Footer aggiornato:** 🤖 DeepAiUG by Gilles
-
----
-
-## Novità v1.5.x
-
-### 📎 File Upload in Chat
-Allega file direttamente nella chat, come in ChatGPT/Claude.ai!
-
-| Tipo | Formati | Note |
-|------|---------|------|
-| 📄 **Documenti** | PDF, TXT, MD, DOCX | Testo estratto e aggiunto al contesto |
-| 🖼️ **Immagini** | PNG, JPG, GIF, WEBP | Richiede modello Vision (LLaVA, Granite3.2-Vision) |
-
-### 🔐 Privacy-First Protection
-Sistema completo per proteggere i tuoi documenti sensibili:
-
-| Protezione | Descrizione |
-|------------|-------------|
-| 🔒 **Upload bloccato su Cloud** | I file possono essere caricati solo con Ollama locale o Remote host |
-| ⚠️ **Privacy Dialog** | Warning automatico quando passi da Local→Cloud con documenti in memoria |
-| 📢 **Banner promemoria** | Ricorda che la sessione contiene dati estratti da documenti |
-
----
-
-## 🏗️ Architettura v1.12.0
+## Architettura
 
 ```
-datapizza-streamlit-interface/
-├── app.py                    # ⭐ Entry point principale
-├── .streamlit/config.toml    # ⭐ NEW: Tema Streamlit nativo (Matrix)
-├── wiki_sources.yaml         # Configurazione sorgenti wiki
-├── remote_servers.yaml       # Config server remoti
-├── cloud_models.yaml         # Config modelli cloud
-├── security_settings.yaml    # Impostazioni sicurezza
-├── branding.yaml             # Personalizzazione titolo/icona/banner
+accountantNanoBot/
+├── app.py                    # Entry point Streamlit (router multipagina)
 │
-├── config/                   # 📁 Configurazione
-│   ├── constants.py          # Costanti, WIKI_TYPES, VISION_MODELS
-│   ├── settings.py           # Loader settings, API keys
-│   └── branding.py           # ⭐ NEW: load_branding() + 6 costanti
+├── parsers/
+│   └── fattura_pa.py         # Parser FatturaPA XML v1.2+
 │
-├── core/                     # 📁 Logica core
-│   ├── llm_client.py         # Factory client LLM
-│   ├── conversation.py       # Gestione messaggi
-│   ├── persistence.py        # Salvataggio/caricamento (+ socratic_history)
-│   └── file_processors.py    # Estrazione testo da file
+├── accounting/
+│   ├── piano_dei_conti.py    # Piano dei conti OIC
+│   ├── prima_nota.py         # Registrazioni partita doppia
+│   └── db.py                 # SQLite (sqlite3 nativo)
 │
-├── rag/                      # 📁 Sistema RAG
-│   ├── models.py             # Document, Chunk
-│   ├── chunker.py            # TextChunker intelligente
-│   ├── vector_store.py       # ChromaDB + fallback
-│   ├── manager.py            # KnowledgeBaseManager
-│   └── adapters/             # Sorgenti dati
-│       ├── local_folder.py   # File locali
-│       ├── mediawiki.py      # API MediaWiki
-│       └── dokuwiki.py       # DokuWiki
+├── agents/
+│   ├── base_agent.py         # BaseAccountingAgent (RAG + prompt)
+│   ├── orchestrator.py       # Orchestratore sequenziale
+│   ├── fatturazione_agent.py # Agente elaborazione fatture
+│   └── memoria_agent.py      # Agente memoria e profilo cliente
 │
-├── export/                   # 📁 Sistema export
-│   └── exporters.py          # MD, JSON, TXT, PDF, ZIP
+├── core/
+│   ├── llm_client.py         # Client Ollama (openai SDK)
+│   └── file_processors.py    # Estrazione testo da PDF, DOCX, XML
 │
-└── ui/                       # 📁 Interfaccia utente
-    ├── styles.py             # CSS
-    ├── style.py              # ⭐ NEW: Matrix Theme (CSS + rain animation)
-    ├── chat.py               # Rendering chat
-    ├── file_upload.py        # Widget upload file
-    ├── privacy_warning.py    # Dialog privacy
-    ├── socratic/             # 🧠 Modulo socratico
-    │   ├── prompts.py        # Template prompt
-    │   ├── buttons.py        # Bottoni UI + registrazione esplorazioni
-    │   ├── history.py        # SocraticExploration + SocraticHistory
-    │   ├── history_widget.py # Widget sidebar storico
-    │   └── session_map.py    # ⭐ NEW: SessionMap + SessionMapAnalyzer (F2)
-    └── sidebar/              # Componenti sidebar
-        ├── session_map_widget.py # ⭐ NEW: Widget mappa sessione (F2)
+├── rag/
+│   ├── manager.py            # KnowledgeBaseManager (ChromaDB)
+│   ├── vector_store.py       # Store vettoriale locale
+│   └── adapters/
+│       └── local_folder.py   # Indicizzazione cartella cliente
+│
+└── ui/pages/
+    ├── dashboard.py          # Dashboard principale
+    ├── onboarding.py         # Setup cliente + scansione cartella
+    └── prima_nota.py         # Review e conferma registrazioni
 ```
 
 ---
 
-## 🚀 Quick Start
+## Requisiti
 
-### Prerequisiti
+- Python 3.10+
+- [Ollama](https://ollama.com) con un modello installato (es. `llama3.2:3b`)
+- 8 GB RAM minimo (16 GB consigliati)
+
+---
+
+## Installazione
 
 ```bash
-# Python 3.9+
-python --version
-
-# Ollama (per modelli locali)
-ollama --version
-ollama list  # verifica modelli installati
+git clone https://github.com/fab128k/accountantNanoBot.git
+cd accountantNanoBot
+python -m venv venv
+source venv/bin/activate       # Linux/Mac
+# oppure: venv\Scripts\activate  # Windows
+pip install -r requirements.txt
 ```
 
 ---
 
-## 🔧 Installazione avanzata (sviluppatori)
-
-### Metodo 1: Script Automatico (da repo clonata)
-
-#### Linux/Mac
-```bash
-git clone https://github.com/EnzoGitHub27/datapizza-streamlit-interface.git
-cd datapizza-streamlit-interface
-chmod +x install.sh
-./install.sh
-```
-
-#### Windows
-```bash
-git clone https://github.com/EnzoGitHub27/datapizza-streamlit-interface.git
-cd datapizza-streamlit-interface
-install.bat
-```
-
----
-
-### Metodo 2: Installazione Manuale Passo-Passo
-
-#### 1. Clona il repository
-```bash
-git clone https://github.com/EnzoGitHub27/datapizza-streamlit-interface.git
-cd datapizza-streamlit-interface
-```
-
-#### 2. Crea un ambiente virtuale
-```bash
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# oppure
-venv\Scripts\activate  # Windows
-```
-
-#### 3. Installa le dipendenze nell'ordine corretto
+## Avvio
 
 ```bash
-# 3.1 - Dipendenze base
-pip install streamlit python-dotenv reportlab pyyaml
+# Assicurati che Ollama sia in esecuzione
+ollama serve
 
-# 3.2 - Datapizza AI core (PRIMA dei client!)
-pip install datapizza-ai
-
-# 3.3 - Client provider (DOPO datapizza-ai)
-pip install datapizza-ai-clients-openai-like  # Per Ollama
-pip install datapizza-ai-clients-openai       # Per OpenAI
-pip install datapizza-ai-clients-anthropic    # Per Anthropic
-pip install datapizza-ai-clients-google       # Per Google
-```
-
-#### 4. Dipendenze aggiuntive
-```bash
-pip install chromadb beautifulsoup4 PyPDF2    # RAG
-pip install mwclient dokuwiki                  # Wiki
-pip install python-docx Pillow                 # File Upload
-```
-
----
-
-### Metodo 3: Poetry
-
-```bash
-poetry env use python3.12
-poetry install
-poetry shell
-```
-
----
-
-## ▶️ Avvio
-
-```bash
+# In un altro terminale
 streamlit run app.py
 ```
 
----
-
-## 🔧 Configurazione API Keys
-
-### Opzione A: File .env
-```env
-OPENAI_API_KEY=sk-your-openai-key-here
-ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
-GOOGLE_API_KEY=your-google-gemini-key-here
-```
-
-### Opzione B: File secrets
-```bash
-mkdir -p secrets
-echo "sk-your-key" > secrets/openai_key.txt
-```
-
-### Opzione C: Interfaccia Web
-Puoi inserire le API keys direttamente dall'interfaccia Streamlit!
+Apri il browser su `http://localhost:8501`.
 
 ---
 
-## 📚 Knowledge Base RAG
+## Modello LLM consigliato
 
-### Sorgenti Supportate
-
-| Tipo | Descrizione | Pacchetto |
-|------|-------------|-----------|
-| 📁 **Cartella Locale** | File MD, TXT, HTML, PDF | - |
-| 🌐 **MediaWiki** | Wikipedia-like wikis | `mwclient` |
-| 📘 **DokuWiki** | Wiki per documentazione | `dokuwiki` |
-
-### Privacy Mode 🔒
-
-Quando la Knowledge Base è attiva:
-- ☁️ **Cloud provider BLOCCATO** automaticamente
-- 💻 Solo **Ollama locale** o **Remote host** permessi
-- 🔒 I tuoi documenti **non escono mai** dal tuo computer
-
----
-
-## 🔧 Modelli Ollama Consigliati
+| RAM disponibile | Modello consigliato |
+|---|---|
+| 8 GB | `phi3:mini` |
+| 16 GB | `llama3.2:3b` o `qwen2.5:3b` |
+| 32 GB+ | `mistral:7b` |
 
 ```bash
-# Modelli generali
-ollama pull llama3.2
-ollama pull mistral
-ollama pull qwen2.5
-
-# Modelli per coding
-ollama pull qwen2.5-coder
-
-# Modelli multimodali (per immagini)
-ollama pull llava
-ollama pull granite3.2-vision
-
-# Modello per embeddings (RAG)
-ollama pull nomic-embed-text
+ollama pull llama3.2:3b
 ```
 
 ---
 
-## 📋 Dipendenze
+## Stato del progetto
 
-```txt
-# Core
-streamlit>=1.28.0
-datapizza-ai
-datapizza-ai-clients-openai-like
-python-dotenv>=1.0.0
-pyyaml>=6.0
+In sviluppo attivo. Funzionalita' implementate:
 
-# RAG
-chromadb>=0.4.0
-beautifulsoup4>=4.12.0
-PyPDF2>=3.0.0
-
-# Wiki Adapters
-mwclient>=0.10.0
-dokuwiki>=0.1.0
-
-# File Upload
-python-docx>=0.8.0
-Pillow>=10.0.0
-
-# Export
-reportlab>=4.0.0
-```
-
----
-
-## 🗺️ Roadmap
+- [x] Parser FatturaPA XML
+- [x] Piano dei conti OIC + prima nota
+- [x] Agenti base con RAG
+- [x] UI Streamlit multipagina (dashboard, onboarding, prima nota)
+- [ ] Pulizia stack (rimozione LangChain, SQLAlchemy, PyPDF2 deprecato)
+- [ ] Pipeline ingestion cartella cliente completa
+- [ ] Profilo cliente con override chain
+- [ ] Liquidazione IVA + F24
+- [ ] LIPE automatica
+- [ ] Installer script Windows/Mac/Linux
 
 Vedi [ROADMAP.md](ROADMAP.md) per il piano completo.
 
-| Versione | Feature | Stato |
-|----------|---------|-------|
-| v1.12.0 | 🏗️ Architettura Sidebar — configurazione separata | ✅ |
-| v1.11.2 | 🚀 Installer multipiattaforma Windows/Mac/Linux | ✅ |
-| v1.11.1 | 🎨 Matrix Theme | ✅ |
-| v1.11.0 | 🎨 Branding + UX Polish + Bug Fix parser | ✅ |
-| v1.10.0 | 📊 Mappa Sessione — Attrito sul pensiero | ✅ |
-| v1.9.1 | 🎨 UI Polish + ☁️ Cloud Config + 🔒 Privacy Granulare | ✅ |
-| v1.9.0 | 📋 Socratic History + Persistence | ✅ |
-| v1.8.0 | 🧠 UI Socratica Completa (5 bottoni + Toggle) | ✅ |
-| v1.7.1 | 🖥️ Remote YAML + 🔐 Security | ✅ |
-| v2.0.0 | Semantic Layer + Knowledge Graph | 🎯 |
+---
+
+## Modello di revenue
+
+Freemium a 4 livelli, coerente con la licenza AGPL-3.0.
+Vedi [REVENUE_MODEL.md](REVENUE_MODEL.md).
 
 ---
 
-## 🤝 Contributing
+## Licenza
 
-Contribuzioni benvenute! Vedi [CONTRIBUTING.md](CONTRIBUTING.md).
+GNU Affero General Public License v3.0 — vedi [LICENSE](LICENSE).
 
-1. Fork del repository
-2. Crea un branch (`git checkout -b feature/nuova-feature`)
-3. Commit (`git commit -m 'feat: aggiungi nuova feature'`)
-4. Push (`git push origin feature/nuova-feature`)
-5. Apri una Pull Request
+Il codice core e' open source. Chi modifica e distribuisce deve rilasciare
+le modifiche. Chi usa internamente (studio, azienda) non ha obblighi di rilascio.
 
 ---
 
-## 📜 License
+## Contributing
 
-MIT License - vedi [LICENSE](LICENSE)
+Contribuzioni benvenute. Vedi [CONTRIBUTING.md](CONTRIBUTING.md).
 
----
-
-## 👥 Credits
-
-- **DeepAiUG** - Community italiana AI
-- **Datapizza** - Framework LLM
-- **Streamlit** - UI Framework
-
----
-
-## 📞 Contatti
-
-- 🌐 [DeepAiUG](https://deepaiug.it)
-- 💬 Issues su GitHub
-- 📧 info@deepaiug.it
-
----
-
-*Made with ❤️ by Gilles - DeepAiUG*
+```bash
+git checkout -b feature/nome-feature
+git commit -m "feat: descrizione"
+git push origin feature/nome-feature
+# apri Pull Request su GitHub
+```
