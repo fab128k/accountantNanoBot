@@ -1,31 +1,19 @@
 # rag/__init__.py
-# DeepAiUG v1.4.1 - Modulo RAG (Retrieval-Augmented Generation)
+# AccountantNanoBot v1.0.0 - Modulo RAG
 # ============================================================================
 
 from .models import Document, Chunk
 from .chunker import TextChunker
 from .vector_store import SimpleVectorStore
 from .manager import KnowledgeBaseManager
-from .adapters import (
-    WikiAdapter,
-    LocalFolderAdapter,
-    MediaWikiAdapter,
-    DokuWikiAdapter,
-)
+from .adapters import WikiAdapter, LocalFolderAdapter
 
 __all__ = [
-    # Models
     "Document",
     "Chunk",
-    # Chunker
     "TextChunker",
-    # Vector Store
     "SimpleVectorStore",
-    # Manager
     "KnowledgeBaseManager",
-    # Adapters
     "WikiAdapter",
     "LocalFolderAdapter",
-    "MediaWikiAdapter",
-    "DokuWikiAdapter",
 ]

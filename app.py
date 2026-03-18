@@ -1,143 +1,43 @@
 # app.py
-# DeepAiUG v1.9.0 - Entry Point
+# AccountantNanoBot v1.0.0 - Router multipagina
 # ============================================================================
-# Interfaccia Streamlit modulare per LLM con:
-# - Ollama locale / Remote / Cloud providers
-# - Knowledge Base RAG (LocalFolder + MediaWiki + DokuWiki)
-# - Export conversazioni (MD, JSON, TXT, PDF)
-# - Persistenza conversazioni
-# - v1.5.0: File Upload in Chat (Privacy-First)
-# - v1.5.0: Privacy Warning per passaggio Local→Cloud con documenti
-# - v1.6.0: Streaming responses
-# - v1.6.1: Bottoni socratici (Genera alternative)
-# - v1.8.0: UI Socratica completa (Confuta, Rifletti, Toggle Mode)
+# Sistema multi-agente per contabilità italiana
 # ============================================================================
 
-from datetime import datetime
 import streamlit as st
 
 # ============================================================================
-# CONFIG & CONSTANTS
-# ============================================================================
-
-from config import (
-    VERSION,
-    DEFAULT_CHUNK_SIZE,
-    DEFAULT_CHUNK_OVERLAP,
-    DEFAULT_TOP_K_RESULTS,
-    DEFAULT_SOCRATIC_MODE,  # v1.8.0
-    DEFAULT_SESSION_MAP_MODE,           # v1.10.0
-    SESSION_MAP_NUDGE_THRESHOLD,        # v1.10.0
-    SESSION_MAP_PROGRESSIVE_VISIBLE_AFTER,  # v1.10.0
-    APP_TITLE,              # v1.10.0 - Branding
-    APP_ICON,               # v1.10.0 - Branding
-    APP_SUBTITLE,           # v1.10.0 - Branding
-    NEWS_BANNER_ENABLED,    # v1.10.0 - Branding
-    NEWS_BANNER_TEXT,        # v1.10.0 - Branding
-    NEWS_BANNER_VERSION,    # v1.10.0 - Branding
-)
-
-# ============================================================================
-# CORE
-# ============================================================================
-
-from core import (
-    create_client,
-    get_local_ollama_models,
-    save_conversation,
-    generate_conversation_id,
-    get_conversation_history,
-    create_message,
-    estimate_tokens,
-)
-
-# 🆕 v1.5.0 - File processors
-from core.file_processors import get_attachment_names
-
-# ============================================================================
-# RAG
-# ============================================================================
-
-from rag import KnowledgeBaseManager
-
-# ============================================================================
-# EXPORT
-# ============================================================================
-
-from export import (
-    get_messages_for_export,
-    export_to_markdown,
-    export_to_json,
-    export_to_txt,
-)
-
-# ============================================================================
-# UI
-# ============================================================================
-
-from ui import (
-    MAIN_CSS,
-    render_chat_message,
-    render_llm_config,
-    render_knowledge_base_config,
-    render_conversations_manager,
-    render_export_section,
-    render_export_preview,
-)
-from ui.sidebar import render_socratic_mode_settings
-
-# 🆕 v1.5.0 - File upload widget
-from ui.file_upload import (
-    render_file_upload_widget,
-    enrich_prompt_with_files,
-    is_vision_model,
-    store_pending_files,
-    get_pending_files,
-    clear_pending_files,
-)
-
-# 🆕 v1.5.0 - Privacy warning dialog
-from ui.privacy_warning import (
-    check_privacy_risk,
-    render_privacy_dialog,
-    handle_privacy_action,
-    render_privacy_warning_banner,
-    reset_privacy_flags,
-    should_show_privacy_dialog,
-)
-
-# 🆕 v1.6.1 - Socratic module
-# 🆕 v1.9.0 - Aggiunto render_socratic_history_sidebar, SocraticHistory
-from ui.socratic import clear_socratic_cache, render_socratic_history_sidebar, SocraticHistory
-
-# 🆕 v1.10.0 - Session Map (F2)
-from ui.socratic import SessionMapAnalyzer, get_nudge_text
-from ui.sidebar.session_map_widget import (
-    render_session_map_settings,
-    render_session_map_display,
-    render_nudge_sidebar,
-    render_generate_map_button,
-)
-
-# v1.11.1 - Matrix Theme
-from ui.style import inject_matrix_style
-
-# ============================================================================
-# PAGE CONFIG
+# PAGE CONFIG (deve essere prima di tutto)
 # ============================================================================
 
 st.set_page_config(
-    page_title=APP_TITLE,
-    page_icon=APP_ICON,
+    page_title="AccountantNanoBot",
+    page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-# v1.11.1 - Matrix Theme
-inject_matrix_style()
+# ============================================================================
+# IMPORTS
+# ============================================================================
 
-# Inject CSS
-st.markdown(MAIN_CSS, unsafe_allow_html=True)
+from config import (
+    APP_TITLE,
+    APP_ICON,
+    DEFAULT_CHUNK_SIZE,
+    DEFAULT_CHUNK_OVERLAP,
+    DEFAULT_TOP_K_RESULTS,
+    OLLAMA_BASE_URL,
+    DEFAULT_MODEL,
+)
+from core.llm_client import get_local_ollama_models
+from ui.style import inject_style
+
+# ============================================================================
+# TEMA
+# ============================================================================
+
+inject_style()
 
 # ============================================================================
 # SESSION STATE INITIALIZATION
@@ -145,580 +45,446 @@ st.markdown(MAIN_CSS, unsafe_allow_html=True)
 
 def initialize_session_state():
     """Inizializza tutte le variabili di sessione necessarie."""
+    from rag import KnowledgeBaseManager
+
     defaults = {
-        "messages": [],
-        "conversation_id": generate_conversation_id(),
-        "conversation_created_at": datetime.now().isoformat(),
-        "total_tokens_estimate": 0,
-        "auto_save_enabled": True,
+        # Core
+        "current_page": "dashboard",
+        "current_model": DEFAULT_MODEL,
+        "models_local": [],
+        # RAG
         "kb_manager": KnowledgeBaseManager(),
         "use_knowledge_base": False,
-        "connection_type": "Local (Ollama)",
-        "current_model": "",
-        "models_local": [],
-        "show_export_preview": False,
-        # KB settings
         "kb_folder_path": "",
-        "kb_extensions": [".md", ".txt"],
+        "kb_extensions": [".md", ".txt", ".pdf", ".xml"],
         "kb_recursive": True,
         "kb_chunk_size": DEFAULT_CHUNK_SIZE,
         "kb_chunk_overlap": DEFAULT_CHUNK_OVERLAP,
         "rag_top_k": DEFAULT_TOP_K_RESULTS,
-        # 🆕 v1.5.0 - File upload
-        "pending_files": [],
-        "pending_has_images": False,
-        "pending_warning": None,
-        # v1.5.0 - Privacy tracking
-        "documents_uploaded_this_session": False,
-        "uploaded_files_history": [],
-        "privacy_acknowledged_for_cloud": False,
-        "show_privacy_dialog": False,
-        # v1.8.0 - Socratic mode
-        "socratic_mode": DEFAULT_SOCRATIC_MODE,
-        # v1.10.0 - Session Map (F2)
-        "session_map_mode": DEFAULT_SESSION_MAP_MODE,
-        "session_map_data": None,
-        "n_domande_sessione": 0,
-        "nudge_mostrato": False,
+        # Agenti
+        "orchestrator": None,
+        "ollama_base_url": OLLAMA_BASE_URL,
+        # UI state
+        "dashboard_messages": [],
     }
-    
+
     for key, value in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = value
 
+
 initialize_session_state()
 
+
 # ============================================================================
-# HELPER FUNCTIONS
+# INIZIALIZZAZIONE AGENTI (lazy, solo quando necessario)
 # ============================================================================
 
-def add_message(
-    role: str, 
-    content: str, 
-    model: str = None, 
-    sources: list = None,
-    attachments: list = None  # 🆕 v1.5.0
-):
-    """
-    Aggiunge un messaggio alla conversazione e salva.
-    
-    Args:
-        role: "user" o "assistant"
-        content: Contenuto del messaggio
-        model: Nome modello (per assistant)
-        sources: Fonti RAG (opzionale)
-        attachments: Nomi file allegati (opzionale) 🆕
-    """
-    message = create_message(role, content, model, sources)
-    
-    # 🆕 v1.5.0 - Aggiungi attachments se presenti
-    if attachments:
-        message["attachments"] = attachments
-    
-    st.session_state["messages"].append(message)
-    st.session_state["total_tokens_estimate"] += estimate_tokens(content)
-    
-    if st.session_state.get("auto_save_enabled", True):
-        _save_current_conversation()
+def ensure_orchestrator():
+    """Inizializza l'orchestratore agenti se non già fatto."""
+    if st.session_state.get("orchestrator") is None:
+        try:
+            from agents.orchestrator import build_default_orchestrator
+            from config.settings import load_company_config
 
-def _save_current_conversation():
-    """Salva la conversazione corrente su disco."""
-    save_conversation(
-        conversation_id=st.session_state["conversation_id"],
-        created_at=st.session_state["conversation_created_at"],
-        messages=st.session_state["messages"],
-        model=st.session_state.get("current_model", ""),
-        provider=st.session_state.get("connection_type", ""),
-        tokens_estimate=st.session_state.get("total_tokens_estimate", 0),
-        kb_settings={
-            "use_knowledge_base": st.session_state.get("use_knowledge_base", False),
-            "kb_folder_path": st.session_state.get("kb_folder_path", ""),
-            "kb_extensions": st.session_state.get("kb_extensions", []),
-            "kb_recursive": st.session_state.get("kb_recursive", True),
-            "kb_chunk_size": st.session_state.get("kb_chunk_size", DEFAULT_CHUNK_SIZE),
-            "kb_chunk_overlap": st.session_state.get("kb_chunk_overlap", DEFAULT_CHUNK_OVERLAP),
-            "rag_top_k": st.session_state.get("rag_top_k", DEFAULT_TOP_K_RESULTS),
-        },
-        socratic_history=SocraticHistory.to_serializable()  # v1.9.0
+            config = load_company_config()
+            model = st.session_state.get("current_model", DEFAULT_MODEL)
+            base_url = st.session_state.get("ollama_base_url", OLLAMA_BASE_URL)
+
+            orchestrator = build_default_orchestrator(
+                models={agent_id: model for agent_id in
+                       ["fatturazione", "iva", "bilancio", "compliance", "prima_nota", "memoria"]},
+                base_url=base_url,
+            )
+
+            # Inietta RAG manager
+            kb_manager = st.session_state.get("kb_manager")
+            if kb_manager:
+                orchestrator.set_rag_manager(kb_manager)
+
+            st.session_state["orchestrator"] = orchestrator
+        except Exception as e:
+            pass  # Agenti non disponibili - OK, verranno richiesti più tardi
+
+
+# ============================================================================
+# PAGINA FATTURE
+# ============================================================================
+
+def _render_fatture_page():
+    """Pagina Fatture - upload e analisi XML FatturaPA."""
+    from config.settings import load_company_config
+    from accounting.db import (
+        init_db, salva_fattura_importata, fattura_gia_importata,
+        salva_registrazione, get_fatture_importate
     )
 
-def reset_conversation():
-    """Resetta la conversazione corrente."""
-    st.session_state["messages"] = []
-    st.session_state["conversation_id"] = generate_conversation_id()
-    st.session_state["conversation_created_at"] = datetime.now().isoformat()
-    st.session_state["total_tokens_estimate"] = 0
-    # 🆕 v1.5.0 - Pulisci anche file pending e flag privacy
-    clear_pending_files()
-    reset_privacy_flags()
-    # 🆕 v1.6.1 - Pulisci cache socratica
-    clear_socratic_cache()
-    # 🆕 v1.9.0 - Pulisci storico socratico
-    SocraticHistory.clear_history()
-    # 🆕 v1.10.0 - Reset mappa sessione
-    st.session_state["session_map_data"] = None
-    st.session_state["n_domande_sessione"] = 0
-    st.session_state["nudge_mostrato"] = False
+    init_db()
 
-# ============================================================================
-# 🆕 v1.6.1 - SOCRATIC CLIENT HELPER
-# ============================================================================
+    st.title("📄 Fatture")
 
-def get_socratic_client(connection_type, provider, api_key, model, base_url, temperature):
-    """
-    Crea un client LLM per i bottoni socratici.
-    Ritorna None se non è possibile crearlo.
-    """
-    if not model:
-        return None
-    
-    try:
-        return create_client(
-            connection_type,
-            provider,
-            api_key,
-            model,
-            "Sei un assistente che genera prospettive alternative e stimola la riflessione critica.",
-            base_url,
-            temperature
+    tab_import, tab_lista = st.tabs(["📤 Importa Fattura", "📋 Fatture Importate"])
+
+    with tab_import:
+        st.subheader("Importa FatturaPA XML")
+
+        config = load_company_config()
+        company_piva = config.get("partita_iva", "")
+
+        if not company_piva:
+            st.warning("⚠️ P.IVA azienda non configurata. Vai alla sezione **Configurazione** prima.")
+
+        uploaded_xml = st.file_uploader(
+            "Carica file XML FatturaPA",
+            type=["xml"],
+            key="fattura_upload",
+            help="Formato FatturaPA v1.2 (FPR12 o FPA12)",
         )
-    except Exception:
-        return None
 
-# ============================================================================
-# SIDEBAR — v1.12.0 Architettura Sidebar
-# ============================================================================
+        if uploaded_xml:
+            xml_bytes = uploaded_xml.read()
 
-# 1. ⚙️ Configurazione (chiusa di default)
-config_expander = st.sidebar.expander("⚙️ Configurazione", expanded=False)
-(
-    connection_type,
-    provider,
-    api_key,
-    model,
-    base_url,
-    system_prompt,
-    temperature,
-    max_messages,
-) = render_llm_config(container=config_expander)
-render_knowledge_base_config(connection_type, container=config_expander)
+            # Controlla duplicato
+            if fattura_gia_importata(xml_bytes):
+                st.warning("⚠️ Questa fattura è già stata importata in precedenza.")
+            else:
+                st.success(f"✅ File caricato: `{uploaded_xml.name}` ({len(xml_bytes):,} bytes)")
 
-# 2. 💬 Conversazione (aperta)
-render_conversations_manager()
+                # Preview rapida
+                try:
+                    from parsers.fattura_pa import FatturaPAParser
+                    parser = FatturaPAParser()
+                    fatture = parser.parse_bytes(xml_bytes)
 
-# 3. 🗺️ Mappa Sessione (aperta)
-session_map_mode = render_session_map_settings()
-st.session_state["session_map_mode"] = session_map_mode
+                    if fatture:
+                        fattura = fatture[0]
 
-# Nudge mappa sessione (modalità threshold) — dentro la sezione
-if (
-    session_map_mode == "threshold"
-    and st.session_state.get("nudge_mostrato", False)
-    and st.session_state.get("session_map_data") is None
-):
-    nudge_text = get_nudge_text(st.session_state["n_domande_sessione"])
-    if render_nudge_sidebar(nudge_text):
-        socratic_client_nudge = get_socratic_client(
-            connection_type, provider, api_key, model, base_url, temperature
-        )
-        if socratic_client_nudge is not None:
-            with st.sidebar.spinner("📊 Costruendo mappa sessione..."):
-                session_map = SessionMapAnalyzer.analyze(
-                    st.session_state["messages"],
-                    socratic_client_nudge.invoke,
-                    st.session_state["conversation_id"],
+                        col1, col2, col3 = st.columns(3)
+                        col1.metric("Numero", fattura.numero)
+                        col2.metric("Data", str(fattura.data))
+                        col3.metric("Totale", f"€{fattura.importo_totale:.2f}")
+
+                        st.markdown(f"**Fornitore:** {fattura.cedente.nome_completo} (P.IVA: {fattura.cedente.partita_iva})")
+                        st.markdown(f"**Cliente:** {fattura.cessionario.nome_completo} (P.IVA: {fattura.cessionario.partita_iva})")
+                        st.markdown(f"**Tipo:** {fattura.descrizione_tipo} ({fattura.tipo_documento})")
+
+                        st.divider()
+
+                        # Analisi agente
+                        col1, col2 = st.columns(2)
+
+                        with col1:
+                            if st.button("🤖 Genera Registrazione", type="primary"):
+                                orchestrator = st.session_state.get("orchestrator")
+                                if orchestrator:
+                                    agent = orchestrator.get_agent("fatturazione")
+                                    if agent:
+                                        # Operazione deterministica — veloce, niente LLM
+                                        ft, reg, _ = agent.analizza_xml_bytes(
+                                            xml_bytes, company_piva
+                                        )
+                                        if reg:
+                                            st.session_state["_current_fattura"] = fattura
+                                            st.session_state["_current_registrazione"] = reg
+                                            st.session_state["_current_xml_bytes"] = xml_bytes
+                                            st.session_state["_current_xml_name"] = uploaded_xml.name
+                                            st.session_state.pop("_llm_analysis", None)
+                                            st.rerun()
+                                    else:
+                                        st.error("❌ Agente fatturazione non disponibile")
+                                else:
+                                    st.error("❌ Agenti non inizializzati")
+
+                        with col2:
+                            if st.button("💾 Importa senza analisi"):
+                                from config.constants import FATTURE_DIR
+                                FATTURE_DIR.mkdir(parents=True, exist_ok=True)
+                                xml_path = FATTURE_DIR / uploaded_xml.name
+                                with open(xml_path, "wb") as f:
+                                    f.write(xml_bytes)
+
+                                salva_fattura_importata(fattura, xml_bytes, str(xml_path))
+                                st.success(f"✅ Fattura importata. Analizzala dalla Prima Nota.")
+
+                except Exception as e:
+                    st.error(f"❌ Errore parsing: {e}")
+
+        # Mostra risultato analisi se presente
+        if st.session_state.get("_current_registrazione"):
+            st.divider()
+            st.subheader("Suggerimento Registrazione")
+
+            reg = st.session_state["_current_registrazione"]
+
+            # Riepilogo registrazione
+            st.markdown(f"**{reg.tipo.descrizione}** — {reg.data} — {reg.descrizione}")
+
+            if reg.righe:
+                import pandas as pd
+                df_righe = pd.DataFrame([
+                    {
+                        "Conto": r.conto_codice,
+                        "Nome": r.conto_nome,
+                        "Dare (€)": float(r.dare),
+                        "Avere (€)": float(r.avere),
+                    }
+                    for r in reg.righe
+                ])
+                st.dataframe(df_righe, use_container_width=True, hide_index=True)
+
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Totale Dare", f"€{reg.totale_dare:.2f}")
+                col2.metric("Totale Avere", f"€{reg.totale_avere:.2f}")
+                col3.metric(
+                    "Stato",
+                    "✅ Bilanciata" if reg.is_bilanciata else f"❌ Diff: €{reg.differenza:.2f}"
                 )
-                if session_map is not None:
-                    st.session_state["session_map_data"] = session_map
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                if st.button("✅ Conferma e Salva", type="primary", disabled=not reg.is_bilanciata):
+                    from config.constants import FATTURE_DIR
+                    fattura = st.session_state.get("_current_fattura")
+                    xml_bytes_saved = st.session_state.get("_current_xml_bytes", b"")
+                    xml_name = st.session_state.get("_current_xml_name", "fattura.xml")
+
+                    # Salva fattura
+                    FATTURE_DIR.mkdir(parents=True, exist_ok=True)
+                    xml_path = FATTURE_DIR / xml_name
+                    with open(xml_path, "wb") as f:
+                        f.write(xml_bytes_saved)
+
+                    if fattura:
+                        salva_fattura_importata(fattura, xml_bytes_saved, str(xml_path))
+
+                    # Salva registrazione confermata
+                    reg.confermata = True
+                    reg_id = salva_registrazione(reg)
+
+                    # Pulisci session state
+                    for key in ["_current_fattura", "_current_registrazione",
+                                "_current_xml_bytes", "_current_xml_name", "_llm_analysis"]:
+                        st.session_state.pop(key, None)
+
+                    st.success(f"✅ Registrazione #{reg_id} salvata e confermata!")
                     st.rerun()
 
-# Bottone genera mappa su conversazione caricata (nessuna mappa, messaggi presenti, mode != off)
-if (
-    st.session_state.get("session_map_data") is None
-    and len(st.session_state.get("messages", [])) > 0
-    and session_map_mode != "off"
-):
-    if render_generate_map_button():
-        socratic_client_gen = get_socratic_client(
-            connection_type, provider, api_key, model, base_url, temperature
-        )
-        if socratic_client_gen is not None:
-            with st.sidebar.spinner("📊 Generando mappa sessione..."):
-                session_map = SessionMapAnalyzer.analyze(
-                    st.session_state["messages"],
-                    socratic_client_gen.invoke,
-                    st.session_state["conversation_id"],
-                )
-                if session_map is not None:
-                    st.session_state["session_map_data"] = session_map
+            with col2:
+                if st.button("🔄 Rigenera"):
+                    orchestrator = st.session_state.get("orchestrator")
+                    if orchestrator:
+                        agent = orchestrator.get_agent("fatturazione")
+                        if agent:
+                            xml_bytes_regen = st.session_state.get("_current_xml_bytes", b"")
+                            ft, new_reg, _ = agent.analizza_xml_bytes(
+                                xml_bytes_regen, company_piva
+                            )
+                            if new_reg:
+                                st.session_state["_current_registrazione"] = new_reg
+                                st.session_state.pop("_llm_analysis", None)
+                                st.rerun()
+
+            with col3:
+                if st.button("❌ Scarta"):
+                    for key in ["_current_fattura", "_current_registrazione",
+                                "_current_xml_bytes", "_current_xml_name", "_llm_analysis"]:
+                        st.session_state.pop(key, None)
                     st.rerun()
 
-# Display mappa se già calcolata + bottone rigenera
-if st.session_state.get("session_map_data") is not None:
-    rigenera = render_session_map_display(
-        st.session_state["session_map_data"],
-        model_name=st.session_state.get("current_model", ""),
-    )
-    if rigenera:
-        socratic_client_regen = get_socratic_client(
-            connection_type, provider, api_key, model, base_url, temperature
+            # Commento LLM in streaming — opzionale, on-demand
+            st.divider()
+            with st.expander("💬 Commento dell'Agente (LLM)", expanded=False):
+                llm_msg = st.session_state.get("_llm_analysis", "")
+                if llm_msg:
+                    st.markdown(llm_msg)
+                else:
+                    st.caption("Il commento LLM viene generato on-demand e non blocca l'interfaccia.")
+                    if st.button("🤖 Chiedi all'Agente", key="btn_llm_commento"):
+                        orchestrator = st.session_state.get("orchestrator")
+                        if orchestrator:
+                            agent = orchestrator.get_agent("fatturazione")
+                            if agent:
+                                xml_bytes_for_llm = st.session_state.get("_current_xml_bytes", b"")
+                                response_placeholder = st.empty()
+                                full_response = ""
+                                try:
+                                    for chunk in agent.stream_commento_fattura(xml_bytes_for_llm, company_piva):
+                                        chunk_text = getattr(chunk, "text", str(chunk))
+                                        if chunk_text:
+                                            full_response = chunk_text
+                                            response_placeholder.markdown(full_response + "▌")
+                                    response_placeholder.markdown(full_response)
+                                    st.session_state["_llm_analysis"] = full_response
+                                except Exception as e:
+                                    st.error(f"❌ Errore LLM: {e}")
+                            else:
+                                st.error("❌ Agente fatturazione non disponibile")
+                        else:
+                            st.warning("⚠️ Agenti non inizializzati")
+
+    with tab_lista:
+        import pandas as pd
+
+        fatture = get_fatture_importate()
+
+        if not fatture:
+            st.info("Nessuna fattura importata ancora.")
+        else:
+            df = pd.DataFrame([
+                {
+                    "ID": f["id"],
+                    "Numero": f["numero"],
+                    "Data": f["data"],
+                    "Fornitore": f["cedente_nome"],
+                    "P.IVA Fornitore": f["cedente_piva"],
+                    "Tipo": f["tipo_documento"],
+                    "Totale (€)": float(f["importo_totale"]),
+                    "Processata": "✅" if f["processata"] else "⏳",
+                }
+                for f in fatture
+            ])
+
+            st.dataframe(
+                df,
+                column_config={
+                    "Totale (€)": st.column_config.NumberColumn(format="€%.2f"),
+                    "Data": st.column_config.DateColumn(format="DD/MM/YYYY"),
+                },
+                use_container_width=True,
+                hide_index=True,
+            )
+
+
+# ============================================================================
+# SIDEBAR - NAVIGAZIONE E CONFIGURAZIONE
+# ============================================================================
+
+with st.sidebar:
+    st.markdown(f"## {APP_ICON} {APP_TITLE}")
+    st.markdown("---")
+
+    # Navigazione
+    st.markdown("### Navigazione")
+
+    pages = {
+        "dashboard": ("🏠", "Dashboard"),
+        "onboarding": ("⚙️", "Configurazione"),
+        "fatture": ("📄", "Fatture"),
+        "prima_nota": ("📒", "Prima Nota"),
+        "bilancio": ("📊", "Bilancio"),
+    }
+
+    for page_id, (icon, label) in pages.items():
+        if st.button(
+            f"{icon} {label}",
+            key=f"nav_{page_id}",
+            use_container_width=True,
+            type="primary" if st.session_state.get("current_page") == page_id else "secondary",
+        ):
+            st.session_state["current_page"] = page_id
+            st.rerun()
+
+    st.markdown("---")
+
+    # Configurazione Ollama
+    with st.expander("🔧 Configurazione LLM", expanded=False):
+        # Refresh modelli
+        if st.button("🔄 Aggiorna modelli", use_container_width=True):
+            with st.spinner("Caricamento..."):
+                models = get_local_ollama_models()
+                st.session_state["models_local"] = models
+                st.session_state["orchestrator"] = None  # Reset per reinizializzare
+
+        models_list = st.session_state.get("models_local", [])
+
+        if models_list:
+            current_model = st.selectbox(
+                "Modello",
+                options=models_list,
+                index=models_list.index(st.session_state.get("current_model", models_list[0]))
+                if st.session_state.get("current_model") in models_list else 0,
+                key="model_selector",
+            )
+            if current_model != st.session_state.get("current_model"):
+                st.session_state["current_model"] = current_model
+                st.session_state["orchestrator"] = None  # Reset per nuovo modello
+        else:
+            st.text_input(
+                "Modello (manuale)",
+                value=st.session_state.get("current_model", DEFAULT_MODEL),
+                key="model_manual",
+            )
+            if st.session_state.get("model_manual"):
+                st.session_state["current_model"] = st.session_state["model_manual"]
+
+        ollama_url = st.text_input(
+            "URL Ollama",
+            value=st.session_state.get("ollama_base_url", OLLAMA_BASE_URL),
+            key="ollama_url_input",
         )
-        if socratic_client_regen is not None:
-            with st.sidebar.spinner("📊 Rigenerando mappa sessione..."):
-                session_map = SessionMapAnalyzer.analyze(
-                    st.session_state["messages"],
-                    socratic_client_regen.invoke,
-                    st.session_state["conversation_id"],
-                )
-                if session_map is not None:
-                    st.session_state["session_map_data"] = session_map
+        if ollama_url != st.session_state.get("ollama_base_url"):
+            st.session_state["ollama_base_url"] = ollama_url
+            st.session_state["orchestrator"] = None
+
+    # Status connessione
+    st.markdown("---")
+    models_available = bool(st.session_state.get("models_local"))
+    if models_available:
+        st.success(f"✅ Ollama connesso ({len(st.session_state['models_local'])} modelli)")
+    else:
+        st.warning("⚠️ Ollama non rilevato")
+        if st.button("Connetti", use_container_width=True):
+            with st.spinner("Connessione..."):
+                models = get_local_ollama_models()
+                if models:
+                    st.session_state["models_local"] = models
                     st.rerun()
+                else:
+                    st.error("❌ Ollama non raggiungibile su localhost:11434")
 
-# 4. 🧠 Modalità Socratica (aperta)
-socratic_mode = render_socratic_mode_settings()
-render_socratic_history_sidebar(socratic_mode)
-
-# 5. 📤 Export (aperta)
-render_export_section()
-
-# ============================================================================
-# 🆕 v1.5.0 - PRIVACY DIALOG (se necessario)
-# ============================================================================
-
-if st.session_state.get("show_privacy_dialog", False):
-    st.title("🔐 Conferma Privacy Richiesta")
-    
-    can_proceed, action = render_privacy_dialog()
-    
-    if can_proceed and action:
-        handle_privacy_action(action)
-    
-    # Blocca il resto dell'interfaccia mentre il dialog è attivo
-    st.stop()
-
-# ============================================================================
-# MAIN - TITLE AND INFO
-# ============================================================================
-
-if connection_type == "Cloud provider":
-    st.title(f"{APP_ICON} {APP_TITLE} → {provider} `{VERSION}`")
-elif connection_type == "Remote host":
-    st.title(f"{APP_ICON} {APP_TITLE} → Remote `{VERSION}`")
-else:
-    st.title(f"{APP_ICON} {APP_TITLE} → Ollama `{VERSION}`")
-
-# ============================================================================
-# 🆕 v1.5.0 - PRIVACY WARNING BANNER (se su Cloud con documenti)
-# ============================================================================
-
-render_privacy_warning_banner()
-
-# ============================================================================
-# KNOWLEDGE BASE BANNER
-# ============================================================================
-
-if st.session_state.get("use_knowledge_base"):
-    kb_manager: KnowledgeBaseManager = st.session_state.get("kb_manager")
+    # Stato KB
+    kb_manager = st.session_state.get("kb_manager")
     if kb_manager and kb_manager.is_indexed():
         stats = kb_manager.get_stats()
-        st.success(
-            f"📚 **Knowledge Base ATTIVA** - "
-            f"{stats.get('document_count', 0)} documenti | "
-            f"{stats.get('chunk_count', 0)} chunks"
-        )
-    else:
-        st.warning("📚 Knowledge Base attivata ma non indicizzata. Configura una cartella nella sidebar.")
+        st.info(f"📚 KB: {stats.get('document_count', 0)} doc, {stats.get('chunk_count', 0)} chunk")
+
+    st.markdown("---")
+    st.caption("AccountantNanoBot v1.0.0")
+    st.caption("🔒 100% locale - Privacy garantita")
+
+
+# ============================================================================
+# ASSICURA ORCHESTRATORE
+# ============================================================================
+
+ensure_orchestrator()
+
+# ============================================================================
+# ROUTING PAGINE
+# ============================================================================
+
+current_page = st.session_state.get("current_page", "dashboard")
+
+if current_page == "dashboard":
+    from ui.pages.dashboard import render_dashboard
+    render_dashboard()
+
+elif current_page == "onboarding":
+    from ui.pages.onboarding import render_onboarding
+    render_onboarding()
+
+elif current_page == "fatture":
+    _render_fatture_page()
+
+elif current_page == "prima_nota":
+    from ui.pages.prima_nota import render_prima_nota
+    render_prima_nota()
+
+elif current_page == "bilancio":
+    st.title("📊 Bilancio")
+    st.info("🚧 Sezione in sviluppo. Sarà disponibile nella prossima versione.")
+
 else:
-    if NEWS_BANNER_ENABLED:
-        st.info(f"✨ **Novità {NEWS_BANNER_VERSION}**: {NEWS_BANNER_TEXT}")
-
-# ============================================================================
-# CONNECTION INDICATOR
-# ============================================================================
-
-if connection_type == "Local (Ollama)":
-    st.success("💻 **Locale** - Privacy totale")
-elif connection_type == "Remote host":
-    st.info("🌐 **Remote** - Rete locale")
-else:
-    st.warning("☁️ **Cloud** - Dati esterni (KB e Upload disabilitati)")
-
-# ============================================================================
-# STATS
-# ============================================================================
-
-messages = st.session_state.get("messages", [])
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("📝 Messaggi", len(messages))
-c2.metric("👤 Domande", len([m for m in messages if m["role"] == "user"]))
-c3.metric("🪙 Token", f"{st.session_state.get('total_tokens_estimate', 0):,}")
-c4.metric("🆔 ID", st.session_state.get("conversation_id", "N/A")[-8:])
-
-# ============================================================================
-# EXPORT PREVIEW (if requested)
-# ============================================================================
-
-if st.session_state.get("show_export_preview"):
-    render_export_preview()
-
-st.markdown("---")
-
-# ============================================================================
-# CHAT AREA - 🆕 v1.6.1 con supporto client socratico
-# ============================================================================
-
-st.subheader("💬 Conversazione")
-
-# 🆕 v1.6.1 - Prepara client per bottoni socratici
-socratic_client = get_socratic_client(
-    connection_type, provider, api_key, model, base_url, temperature
-)
-
-if not messages:
-    if st.session_state.get("use_knowledge_base"):
-        st.info("👋 Knowledge Base attiva! Fai una domanda sui tuoi documenti.")
-    else:
-        st.info("👋 Inizia una conversazione!")
-else:
-    # v1.8.0 - Passa messages_list e socratic_mode a render_chat_message
-    for idx, msg in enumerate(messages):
-        render_chat_message(
-            msg,
-            idx,
-            socratic_client,
-            messages_list=messages,
-            socratic_mode=socratic_mode
-        )
-
-# v1.9.0 - Auto-save dopo esplorazione socratica
-if st.session_state.pop("_socratic_save_needed", False):
-    _save_current_conversation()
-
-st.markdown("---")
-
-# ============================================================================
-# INPUT AREA - v1.5.0 con File Upload
-# ============================================================================
-
-st.subheader("✍️ Messaggio")
-
-# 🆕 v1.5.0 - FILE UPLOAD WIDGET (FUORI dal form!)
-# Nota: st.file_uploader non funziona correttamente dentro st.form
-processed_files, has_images, upload_warning = render_file_upload_widget(
-    connection_type=connection_type,
-    current_model=model,
-    key="chat_file_upload"
-)
-
-# Salva file in session_state per uso nel submit
-store_pending_files(processed_files, has_images, upload_warning)
-
-# Riepilogo file se presenti
-if processed_files:
-    valid_count = len([f for f in processed_files if not f.error])
-    if valid_count > 0:
-        st.success(f"📎 {valid_count} file pronti per l'invio")
-
-# ========== FORM MESSAGGIO ==========
-with st.form("msg_form", clear_on_submit=True):
-    placeholder = (
-        "Chiedi qualcosa sui tuoi documenti..." 
-        if st.session_state.get("use_knowledge_base") 
-        else "Scrivi il tuo messaggio..."
-    )
-    user_input = st.text_area(
-        "Messaggio", 
-        "", 
-        height=100, 
-        placeholder=placeholder, 
-        label_visibility="collapsed"
-    )
-    
-    col1, col2, _ = st.columns([2, 2, 6])
-    with col1:
-        submit = st.form_submit_button(
-            "🚀 Invia", 
-            use_container_width=True, 
-            type="primary"
-        )
-
-# Reset button (fuori dal form)
-_, col_reset, _ = st.columns([2, 2, 6])
-with col_reset:
-    if st.button("🔄 Nuova", use_container_width=True):
-        reset_conversation()
-        st.rerun()
-
-# ============================================================================
-# MESSAGE SUBMISSION WITH RAG + FILE ATTACHMENTS (v1.5.0)
-# ============================================================================
-
-if submit and user_input.strip():
-    if not model:
-        st.error("❌ Seleziona un modello!")
-    elif connection_type == "Cloud provider" and not api_key:
-        st.error("❌ Inserisci API key!")
-    elif connection_type == "Cloud provider" and st.session_state.get("use_knowledge_base"):
-        st.error("🔒 Cloud bloccato con Knowledge Base attiva!")
-    else:
-        try:
-            # 🆕 v1.5.0 - Recupera file da session_state
-            pending_files, pending_has_images, _ = get_pending_files()
-            
-            # Lista nomi file per metadati messaggio
-            attachment_names = get_attachment_names(pending_files) if pending_files else None
-            
-            # 🆕 Arricchisci prompt con contenuto file
-            can_use_images = pending_has_images and is_vision_model(model)
-            enriched_input, images_data = enrich_prompt_with_files(
-                user_input.strip(),
-                pending_files,
-                include_images=can_use_images
-            )
-            
-            # Add user message (mostra testo originale, non enriched)
-            add_message("user", user_input.strip(), attachments=attachment_names)
-
-            # 🆕 v1.10.0 - Incrementa contatore domande sessione
-            st.session_state["n_domande_sessione"] += 1
-            
-            # Prepare RAG context if active
-            context_text = ""
-            sources = []
-            
-            if st.session_state.get("use_knowledge_base"):
-                kb_manager: KnowledgeBaseManager = st.session_state.get("kb_manager")
-                if kb_manager and kb_manager.is_indexed():
-                    top_k = st.session_state.get("rag_top_k", DEFAULT_TOP_K_RESULTS)
-                    with st.spinner("🔍 Ricerca documenti rilevanti..."):
-                        context_text, sources = kb_manager.get_context_for_prompt(
-                            user_input.strip(), 
-                            top_k
-                        )
-                    
-                    if context_text:
-                        st.info(f"📎 Trovati {len(sources)} documenti KB")
-            
-            # Create LLM client
-            with st.spinner("🔧 Connessione..."):
-                client = create_client(
-                    connection_type, 
-                    provider, 
-                    api_key, 
-                    model, 
-                    system_prompt, 
-                    base_url, 
-                    temperature
-                )
-            
-            # Prepare prompt
-            history = get_conversation_history(
-                st.session_state.get("messages", []),
-                max_messages
-            )
-            
-            # Build prompt with RAG context + FILE ATTACHMENTS
-            if context_text:
-                # System prompt enriched with KB context
-                rag_system = f"""{system_prompt}
-
-IMPORTANTE: Usa le seguenti informazioni dalla Knowledge Base per rispondere. 
-Se la risposta non è presente nei documenti, dillo chiaramente.
-Cita sempre le fonti quando usi informazioni dai documenti.
-
---- DOCUMENTI RILEVANTI (KB) ---
-{context_text}
---- FINE DOCUMENTI KB ---"""
-                
-                # Usa enriched_input che include anche i file allegati
-                full_prompt = f"{rag_system}\n\nUtente: {enriched_input}\n\nAssistente:"
-            else:
-                # Normal prompt with history + file attachments
-                context = ""
-                for msg in history[:-1]:
-                    role_label = "Utente" if msg["role"] == "user" else "AI"
-                    context += f"{role_label}: {msg['content']}\n\n"
-                full_prompt = (
-                    f"{context}Utente: {enriched_input}\n\nAI:" 
-                    if context 
-                    else enriched_input
-                )
-            
-            # Invoke LLM with streaming ✨ v1.6.0
-            # 🆕 TODO: Aggiungere supporto Vision API per immagini
-            # Per ora le immagini vengono preparate ma non inviate (richiede modifiche a llm_client)
-
-            # Generator per estrarre solo il nuovo testo dai chunk
-            def response_generator():
-                """Yielda solo il nuovo testo incrementale dai chunk di streaming"""
-                previous_text = ""
-                for chunk in client.stream_invoke(full_prompt):
-                    # Estrai testo dal chunk
-                    current_text = getattr(chunk, "text", str(chunk))
-                    if current_text:
-                        # Yielda solo la differenza (nuovo testo)
-                        new_text = current_text[len(previous_text):]
-                        if new_text:
-                            yield new_text
-                            previous_text = current_text
-
-            # Display streaming response
-            with st.chat_message("assistant"):
-                response_text = st.write_stream(response_generator())
-
-            # Add response with sources to conversation
-            add_message(
-                "assistant",
-                response_text,
-                model=model,
-                sources=sources if sources else None
-            )
-            
-            # 🆕 v1.5.0 - Pulisci file pending dopo invio
-            clear_pending_files()
-
-            # 🆕 v1.10.0 - Session Map: logica post-risposta
-            map_mode = st.session_state.get("session_map_mode", "off")
-            n_domande = st.session_state["n_domande_sessione"]
-
-            if map_mode == "progressive" and n_domande >= SESSION_MAP_PROGRESSIVE_VISIBLE_AFTER:
-                # Modalità progressiva: aggiorna mappa dopo ogni risposta
-                session_map = SessionMapAnalyzer.analyze(
-                    st.session_state["messages"],
-                    client.invoke,
-                    st.session_state["conversation_id"],
-                )
-                if session_map is not None:
-                    st.session_state["session_map_data"] = session_map
-
-            elif map_mode == "threshold" and not st.session_state["nudge_mostrato"]:
-                if n_domande >= SESSION_MAP_NUDGE_THRESHOLD:
-                    st.session_state["nudge_mostrato"] = True
-
-            st.rerun()
-            
-        except Exception as e:
-            st.error(f"❌ Errore: {e}")
-
-# ============================================================================
-# FOOTER
-# ============================================================================
-
-st.markdown("---")
-c1, c2, _ = st.columns([2, 8, 2])
-c1.caption("🤖 DeepAiUG by Gilles")
-c2.caption(f"{VERSION} - Socratic Mode | DeepAiUG © 2026")
-
-# Visual indicators
-if connection_type == "Cloud provider":
-    # Rosso per cloud (warning: dati esterni)
-    st.markdown(
-        '<style>.stApp { border-top: 4px solid #ff6b6b !important; }</style>',
-        unsafe_allow_html=True
-    )
-else:
-    # Verde per Local/Remote (safe: dati locali)
-    st.markdown(
-        '<style>.stApp { border-top: 4px solid #4CAF50 !important; }</style>',
-        unsafe_allow_html=True
-    )
+    from ui.pages.dashboard import render_dashboard
+    render_dashboard()

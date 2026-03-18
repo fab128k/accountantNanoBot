@@ -1,15 +1,11 @@
 # rag/adapters/__init__.py
-# DeepAiUG v1.4.1 - Modulo adapters
+# AccountantNanoBot v1.0.0 - Modulo adapters (solo LocalFolder)
 # ============================================================================
 
 from .base import WikiAdapter
 from .local_folder import LocalFolderAdapter
-from .mediawiki import MediaWikiAdapter
-from .dokuwiki import DokuWikiAdapter
 
 __all__ = [
     "WikiAdapter",
     "LocalFolderAdapter",
-    "MediaWikiAdapter",
-    "DokuWikiAdapter",
 ]

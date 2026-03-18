@@ -1,199 +1,332 @@
 # ui/style.py
-# DeepAiUG v1.11.1 - Matrix Theme
+# AccountantNanoBot v1.0.0 - Tema professionale per commercialisti
 # ============================================================================
 
 
-def inject_matrix_style() -> None:
-    """Inietta il tema Matrix nell'app Streamlit."""
-    from config.branding import MATRIX_RAIN_ENABLED, MATRIX_RAIN_INTENSITY
-
+def inject_style() -> None:
+    """Inietta il tema professionale nell'app Streamlit."""
     _inject_css()
-    if MATRIX_RAIN_ENABLED:
-        _inject_matrix_rain(MATRIX_RAIN_INTENSITY)
+
+
+inject_matrix_style = inject_style
 
 
 def _inject_css() -> None:
-    """Inject Matrix CSS variables, scanlines, and component styles."""
     import streamlit as st
 
     st.markdown("""<style>
-    /* === FONT IMPORT === */
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cinzel:wght@700;900&family=Exo+2:wght@300;400;600&display=swap');
 
-    /* === VARIABILI === */
-    :root {
-      --matrix-green: #00ff41;
-      --teal: #00d4aa;
-      --teal-dark: #009977;
-      --bg: #020c06;
-      --bg-card: rgba(0, 20, 12, 0.92);
-      --text: #c8ffd4;
-      --text-dim: #4a8a5a;
-      --border: rgba(0, 212, 170, 0.2);
+    /* =====================================================================
+       TESTO PRINCIPALE — forza colore scuro su tutto il body principale
+    ===================================================================== */
+    .stApp, .stApp p, .stApp span, .stApp div,
+    .stApp label, .stApp li, .stApp td, .stApp th,
+    [data-testid="stMarkdown"], [data-testid="stMarkdown"] *,
+    [data-testid="stText"], [data-testid="stCaption"],
+    .stMarkdown, .stMarkdown p, .stMarkdown span {
+      color: #0d1b2a !important;
     }
 
-    /* === APP BACKGROUND === */
-    .stApp { background: #020c06 !important; color: #c8ffd4 !important; }
-
-    /* === SCANLINES OVERLAY === */
-    .stApp::before {
-      content: '';
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 2px,
-        rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px
-      );
-      pointer-events: none; z-index: 9998;
+    /* Titoli */
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4 {
+      color: #0d2137 !important;
+      font-weight: 700 !important;
     }
+    h1 { border-bottom: 3px solid #1a5fa8; padding-bottom: 0.4rem; }
 
-    /* === SIDEBAR === */
+    /* Sfondo app */
+    .stApp { background: #f0f4f8 !important; }
+    .block-container { padding-top: 1.5rem !important; max-width: 1200px !important; }
+
+    /* =====================================================================
+       SIDEBAR — sfondo bianco, testo scuro
+    ===================================================================== */
     [data-testid="stSidebar"] {
-      background: rgba(0, 15, 8, 0.97) !important;
-      border-right: 1px solid rgba(0, 212, 170, 0.2) !important;
+      background: #1e3a5f !important;
+      border-right: 2px solid #0d2137 !important;
     }
 
-    /* === TITOLO H1 con GLITCH === */
-    .stApp h1 {
-      font-family: 'Cinzel', serif !important;
-      color: #00d4aa !important;
-      position: relative;
-      animation: glitch 4s infinite;
-    }
-    @keyframes glitch {
-      0%, 89%, 100% { transform: translate(0); }
-      90% { transform: translate(-2px, 1px); color: #ff0040; }
-      92% { transform: translate(2px, -1px); color: #00ffff; }
-      94% { transform: translate(0); color: #00d4aa; }
-    }
-
-    /* === H2, H3 === */
-    .stApp h2, .stApp h3 {
-      font-family: 'Exo 2', sans-serif !important;
-      color: #00d4aa !important;
+    /* Tutto il testo nella sidebar: bianco ad alta leggibilità */
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] div,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] .stMarkdown * {
+      color: #ffffff !important;
     }
 
-    /* === CHAT BUBBLES === */
-    [data-testid="stChatMessage"] {
-      background: rgba(0, 20, 12, 0.92) !important;
-      border: 1px solid rgba(0, 212, 170, 0.2) !important;
-      border-radius: 4px !important;
-      font-family: 'Exo 2', sans-serif !important;
+    /* Caption/muted nella sidebar */
+    [data-testid="stSidebar"] small,
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+      color: #c0d4ea !important;
     }
 
-    /* === BOTTONI === */
+    /* Bottoni nella sidebar: outline bianco */
+    [data-testid="stSidebar"] .stButton > button {
+      border: 1px solid rgba(255,255,255,0.5) !important;
+      color: #ffffff !important;
+      background: rgba(255,255,255,0.08) !important;
+      font-weight: 500 !important;
+      border-radius: 6px !important;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+      background: rgba(255,255,255,0.18) !important;
+      border-color: rgba(255,255,255,0.8) !important;
+    }
+    /* Bottone primario nella sidebar: bianco pieno */
+    [data-testid="stSidebar"] .stButton > button[kind="primary"] {
+      background: rgba(255,255,255,0.22) !important;
+      border: 2px solid #ffffff !important;
+      font-weight: 700 !important;
+    }
+
+    /* Input nella sidebar */
+    [data-testid="stSidebar"] input,
+    [data-testid="stSidebar"] textarea,
+    [data-testid="stSidebar"] select {
+      background: rgba(255,255,255,0.12) !important;
+      color: #ffffff !important;
+      border-color: rgba(255,255,255,0.3) !important;
+    }
+
+    /* Success/info/warning nella sidebar */
+    [data-testid="stSidebar"] .stAlert {
+      color: #0d1b2a !important;
+    }
+
+    /* =====================================================================
+       BOTTONI PRINCIPALI (area contenuto)
+    ===================================================================== */
     .stButton > button {
-      background: transparent !important;
-      border: 1px solid #00d4aa !important;
-      color: #00d4aa !important;
-      font-family: 'Share Tech Mono', monospace !important;
-      border-radius: 2px !important;
-      transition: all 0.2s ease !important;
+      border: 1px solid #1a5fa8 !important;
+      color: #1a5fa8 !important;
+      background: #ffffff !important;
+      border-radius: 6px !important;
+      font-weight: 500 !important;
+      transition: all 0.15s ease !important;
     }
     .stButton > button:hover {
-      background: rgba(0, 212, 170, 0.12) !important;
-      border-color: #00ff41 !important;
-      color: #00ff41 !important;
-      box-shadow: 0 0 8px rgba(0, 212, 170, 0.4) !important;
+      background: #e8f0fb !important;
+      border-color: #0d2137 !important;
+      color: #0d2137 !important;
+    }
+    .stButton > button[kind="primary"] {
+      background: #1a5fa8 !important;
+      color: #ffffff !important;
+      border: none !important;
+      font-weight: 600 !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+      background: #0d2137 !important;
     }
 
-    /* === INPUT / TEXTAREA === */
-    .stTextArea textarea, .stTextInput input {
-      background: rgba(0, 20, 12, 0.85) !important;
-      border: 1px solid rgba(0, 212, 170, 0.3) !important;
-      color: #c8ffd4 !important;
-      font-family: 'Share Tech Mono', monospace !important;
+    /* =====================================================================
+       INPUT / FORM
+    ===================================================================== */
+    .stTextInput input, .stTextArea textarea, .stSelectbox select {
+      background: #ffffff !important;
+      color: #0d1b2a !important;
+      border: 1px solid #9ab3cc !important;
+      border-radius: 6px !important;
     }
-    .stTextArea textarea:focus, .stTextInput input:focus {
-      border-color: #00d4aa !important;
-      box-shadow: 0 0 6px rgba(0, 212, 170, 0.3) !important;
+    .stTextInput input:focus, .stTextArea textarea:focus {
+      border-color: #1a5fa8 !important;
+      box-shadow: 0 0 0 3px rgba(26,95,168,0.15) !important;
     }
-
-    /* === SELECTBOX === */
-    [data-testid="stSelectbox"] > div {
-      background: rgba(0, 20, 12, 0.85) !important;
-      border: 1px solid rgba(0, 212, 170, 0.3) !important;
-      color: #c8ffd4 !important;
-      font-family: 'Share Tech Mono', monospace !important;
-    }
-
-    /* === EXPANDER === */
-    .streamlit-expanderHeader, [data-testid="stExpanderToggleIcon"] {
-      font-family: 'Share Tech Mono', monospace !important;
-      color: #00d4aa !important;
+    /* Label dei form */
+    .stTextInput label, .stTextArea label, .stSelectbox label,
+    .stNumberInput label, .stDateInput label, .stCheckbox label,
+    .stRadio label {
+      color: #0d1b2a !important;
+      font-weight: 600 !important;
     }
 
-    /* === METRIC === */
+    /* =====================================================================
+       METRICHE
+    ===================================================================== */
     [data-testid="stMetric"] {
-      font-family: 'Share Tech Mono', monospace !important;
-      color: #00d4aa !important;
+      background: #ffffff !important;
+      border: 1px solid #c8d8e8 !important;
+      border-radius: 8px !important;
+      padding: 1rem !important;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07) !important;
+    }
+    [data-testid="stMetricLabel"] p { color: #3a5a78 !important; font-size: 0.85rem !important; }
+    [data-testid="stMetricValue"]  { color: #0d2137 !important; font-weight: 800 !important; font-size: 1.8rem !important; }
+
+    /* =====================================================================
+       TABELLE / DATAFRAME
+    ===================================================================== */
+    [data-testid="stDataFrame"] { border: 1px solid #c8d8e8 !important; border-radius: 8px !important; }
+    [data-testid="stDataFrame"] th { background: #1e3a5f !important; color: #ffffff !important; }
+    [data-testid="stDataFrame"] td { color: #0d1b2a !important; }
+
+    /* =====================================================================
+       CHAT
+    ===================================================================== */
+    [data-testid="stChatMessage"] {
+      background: #ffffff !important;
+      border: 1px solid #c8d8e8 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+    }
+    [data-testid="stChatMessage"] p,
+    [data-testid="stChatMessage"] span {
+      color: #0d1b2a !important;
     }
 
-    /* === CAPTION === */
-    [data-testid="stCaptionContainer"] {
-      font-family: 'Share Tech Mono', monospace !important;
-      color: #4a8a5a !important;
+    /* =====================================================================
+       TAB
+    ===================================================================== */
+    [data-testid="stTabs"] [data-baseweb="tab"] {
+      color: #3a5a78 !important;
+      font-weight: 500 !important;
+    }
+    [data-testid="stTabs"] [aria-selected="true"] {
+      color: #0d2137 !important;
+      font-weight: 700 !important;
+      border-bottom: 2px solid #1a5fa8 !important;
     }
 
-    /* === ALERT / INFO BANNER === */
-    .stAlert {
-      background: rgba(0, 20, 12, 0.85) !important;
-      border: 1px solid rgba(0, 212, 170, 0.2) !important;
-      color: #c8ffd4 !important;
+    /* =====================================================================
+       ALERT / BANNER
+    ===================================================================== */
+    .stAlert p, .stAlert span, .stAlert div { color: inherit !important; }
+    [data-testid="stNotification"] { color: #0d1b2a !important; }
+
+    /* =====================================================================
+       EXPANDER
+    ===================================================================== */
+    [data-testid="stExpander"] summary,
+    .streamlit-expanderHeader { color: #0d2137 !important; font-weight: 600 !important; }
+
+    /* =====================================================================
+       RADIO BUTTON
+    ===================================================================== */
+    .stRadio > div {
+      background: transparent !important;
+    }
+    .stRadio label, .stRadio span, .stRadio p,
+    [data-testid="stWidgetLabel"] {
+      color: #0d1b2a !important;
+    }
+    /* Nella sidebar: testo bianco */
+    [data-testid="stSidebar"] .stRadio label,
+    [data-testid="stSidebar"] .stRadio span,
+    [data-testid="stSidebar"] .stRadio p,
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
+      color: #ffffff !important;
+    }
+    /* Cerchio radio selezionato */
+    [data-testid="stSidebar"] .stRadio [data-baseweb="radio"] div {
+      border-color: #ffffff !important;
     }
 
-    /* === SCROLLBAR === */
-    ::-webkit-scrollbar { width: 3px; height: 3px; }
-    ::-webkit-scrollbar-track { background: #020c06; }
-    ::-webkit-scrollbar-thumb { background: #00d4aa; border-radius: 2px; }
-
-    /* === RIDUCE SPAZIO SOPRA IL TITOLO === */
-    .block-container {
-      padding-top: 1.5rem !important;
+    /* =====================================================================
+       SELECTBOX / DROPDOWN
+    ===================================================================== */
+    /* Contenitore selectbox */
+    [data-baseweb="select"] {
+      background: #ffffff !important;
     }
+    [data-baseweb="select"] > div {
+      background: #ffffff !important;
+      border: 1px solid #9ab3cc !important;
+      border-radius: 6px !important;
+    }
+    /* Testo valore selezionato */
+    [data-baseweb="select"] span,
+    [data-baseweb="select"] div {
+      color: #0d1b2a !important;
+      background: transparent !important;
+    }
+    /* Icona freccia */
+    [data-baseweb="select"] svg { fill: #1a5fa8 !important; }
+
+    /* Dropdown aperto (lista opzioni) */
+    [data-baseweb="popover"] {
+      background: #ffffff !important;
+    }
+    [data-baseweb="menu"] {
+      background: #ffffff !important;
+      border: 1px solid #c8d8e8 !important;
+      border-radius: 6px !important;
+    }
+    [data-baseweb="menu"] li,
+    [data-baseweb="menu"] ul,
+    [data-baseweb="option"] {
+      background: #ffffff !important;
+      color: #0d1b2a !important;
+    }
+    [data-baseweb="option"]:hover {
+      background: #e8f0fb !important;
+      color: #0d2137 !important;
+    }
+
+    /* Selectbox nella sidebar */
+    [data-testid="stSidebar"] [data-baseweb="select"] > div {
+      background: rgba(255,255,255,0.12) !important;
+      border-color: rgba(255,255,255,0.3) !important;
+    }
+    [data-testid="stSidebar"] [data-baseweb="select"] span,
+    [data-testid="stSidebar"] [data-baseweb="select"] div {
+      color: #ffffff !important;
+    }
+    [data-testid="stSidebar"] [data-baseweb="select"] svg { fill: #ffffff !important; }
+
+    /* =====================================================================
+       FILE UPLOADER
+    ===================================================================== */
+    [data-testid="stFileUploader"] {
+      background: #ffffff !important;
+      border: 2px dashed #9ab3cc !important;
+      border-radius: 8px !important;
+    }
+    [data-testid="stFileUploader"] section {
+      background: #ffffff !important;
+    }
+    [data-testid="stFileUploader"] p,
+    [data-testid="stFileUploader"] span,
+    [data-testid="stFileUploader"] div,
+    [data-testid="stFileUploader"] small,
+    [data-testid="stFileUploader"] label {
+      color: #0d1b2a !important;
+      background: transparent !important;
+    }
+    [data-testid="stFileUploader"] button {
+      background: #ffffff !important;
+      color: #1a5fa8 !important;
+      border: 1px solid #1a5fa8 !important;
+      border-radius: 6px !important;
+    }
+    [data-testid="stFileUploaderDropzone"] {
+      background: #f0f4f8 !important;
+      border-color: #9ab3cc !important;
+    }
+    [data-testid="stFileUploaderDropzone"] p,
+    [data-testid="stFileUploaderDropzone"] span,
+    [data-testid="stFileUploaderDropzone"] div {
+      color: #0d1b2a !important;
+    }
+    /* File già caricati — badge */
+    [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] {
+      background: #e8f0fb !important;
+      border: 1px solid #c8d8e8 !important;
+      border-radius: 6px !important;
+    }
+    [data-testid="stFileUploader"] [data-testid="stFileUploaderFile"] * {
+      color: #0d1b2a !important;
+    }
+
+    /* =====================================================================
+       SCROLLBAR
+    ===================================================================== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #e8f0f8; }
+    ::-webkit-scrollbar-thumb { background: #1a5fa8; border-radius: 3px; }
 
     </style>""", unsafe_allow_html=True)
-
-
-def _inject_matrix_rain(intensity: float = 0.055) -> None:
-    """Inietta il canvas Matrix rain nel documento parent (escape dall'iframe)."""
-    import streamlit.components.v1 as components
-
-    components.html(f"""
-    <script>
-    (function() {{
-        const existing = window.parent.document.getElementById('matrix-rain');
-        if (existing) existing.remove();
-        const canvas = window.parent.document.createElement('canvas');
-        canvas.id = 'matrix-rain';
-        canvas.style.cssText = [
-            'position:fixed', 'top:0', 'left:0',
-            'width:100vw', 'height:100vh',
-            'z-index:0', 'opacity:{intensity}',
-            'pointer-events:none'
-        ].join(';');
-        window.parent.document.body.appendChild(canvas);
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.parent.innerWidth;
-        canvas.height = window.parent.innerHeight;
-        const chars = 'アイウエオカキクケコ0123456789ABCDEF∑∏∫φψω'.split('');
-        const fs = 13;
-        let drops = Array(Math.floor(canvas.width / fs)).fill(1);
-        setInterval(() => {{
-            ctx.fillStyle = 'rgba(2, 12, 6, 0.05)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.font = fs + 'px monospace';
-            drops.forEach((y, i) => {{
-                const char = chars[Math.floor(Math.random() * chars.length)];
-                ctx.fillStyle = Math.random() > 0.95 ? '#00d4aa' : '#00ff41';
-                ctx.fillText(char, i * fs, y * fs);
-                if (y * fs > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }});
-        }}, 60);
-        window.parent.addEventListener('resize', () => {{
-            canvas.width = window.parent.innerWidth;
-            canvas.height = window.parent.innerHeight;
-        }});
-    }})();
-    </script>
-    """, height=0)

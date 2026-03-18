@@ -1,157 +1,234 @@
 # core/llm_client.py
-# DeepAiUG v1.4.0 - Client LLM
+# AccountantNanoBot v1.0.0 - Client LLM (solo Ollama locale)
 # ============================================================================
 
 import subprocess
-from typing import List, Any
-
-import requests
-
-from datapizza.clients import ClientFactory
-from datapizza.clients.factory import Provider
-from datapizza.clients.openai_like import OpenAILikeClient
+from typing import List, Any, Generator, Optional
 
 
 def get_local_ollama_models() -> List[str]:
     """
     Recupera lista modelli Ollama installati localmente.
-    
+
     Esegue 'ollama list' e parsa l'output.
-    
+
     Returns:
         Lista di nomi modelli disponibili
     """
     try:
         proc = subprocess.run(
-            ["ollama", "list"], 
-            capture_output=True, 
-            text=True, 
-            check=True, 
+            ["ollama", "list"],
+            capture_output=True,
+            text=True,
+            check=True,
             timeout=5
         )
         lines = proc.stdout.splitlines()
         models = []
-        
+
         for line in lines:
             s = line.strip()
-            # Salta righe vuote, header e separatori
             if not s or s.upper().startswith("NAME") or set(s) <= set("- "):
                 continue
             parts = s.split()
             if parts:
                 models.append(parts[0])
-        
+
         return models
 
     except Exception:
         return []
 
 
-def get_remote_ollama_models(base_url: str) -> List[str]:
+class OllamaClient:
     """
-    Recupera lista modelli Ollama da server remoto via API HTTP.
+    Client semplificato per Ollama via API OpenAI-compatibile.
 
-    Chiama l'endpoint /api/tags del server Ollama remoto per ottenere
-    la lista dei modelli disponibili.
+    Usato dagli agenti contabili per comunicare con modelli locali.
+    """
+
+    def __init__(
+        self,
+        model: str,
+        system_prompt: str,
+        temperature: float = 0.1,
+        base_url: str = "http://localhost:11434/v1",
+    ):
+        self.model = model
+        self.system_prompt = system_prompt
+        self.temperature = temperature
+        self.base_url = base_url.rstrip("/")
+
+    def invoke(self, prompt: str, max_tokens: int = 500) -> str:
+        """
+        Invia prompt al modello e ritorna risposta completa.
+
+        Args:
+            prompt: Testo del prompt utente
+            max_tokens: Limite token risposta (default 500)
+
+        Returns:
+            Risposta del modello come stringa
+        """
+        try:
+            from openai import OpenAI
+
+            client = OpenAI(
+                base_url=self.base_url,
+                api_key="ollama",
+            )
+
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=self.temperature,
+                max_tokens=max_tokens,
+            )
+
+            return response.choices[0].message.content or ""
+
+        except Exception as e:
+            return f"[Errore LLM: {e}]"
+
+    def stream_invoke(self, prompt: str, max_tokens: int = 500) -> Generator[str, None, None]:
+        """
+        Invia prompt e ritorna generatore di chunk di testo.
+
+        Args:
+            prompt: Testo del prompt utente
+            max_tokens: Limite token risposta (default 500)
+
+        Yields:
+            Chunk di testo man mano che arrivano
+        """
+        try:
+            from openai import OpenAI
+
+            client = OpenAI(
+                base_url=self.base_url,
+                api_key="ollama",
+            )
+
+            stream = client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=self.temperature,
+                stream=True,
+                max_tokens=max_tokens,
+            )
+
+            accumulated = ""
+            for chunk in stream:
+                if chunk.choices[0].delta.content:
+                    accumulated += chunk.choices[0].delta.content
+                    # Yield oggetto con attributo .text per compatibilità
+                    yield _TextChunk(accumulated)
+
+        except Exception as e:
+            yield _TextChunk(f"[Errore LLM: {e}]")
+
+    def invoke_with_history(self, messages: List[dict], user_message: str) -> str:
+        """
+        Invia messaggio con storico conversazione.
+
+        Args:
+            messages: Lista di dict {"role": "user"|"assistant", "content": str}
+            user_message: Nuovo messaggio utente
+
+        Returns:
+            Risposta del modello
+        """
+        try:
+            from openai import OpenAI
+
+            client = OpenAI(
+                base_url=self.base_url,
+                api_key="ollama",
+            )
+
+            api_messages = [{"role": "system", "content": self.system_prompt}]
+            api_messages.extend(messages)
+            api_messages.append({"role": "user", "content": user_message})
+
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=api_messages,
+                temperature=self.temperature,
+            )
+
+            return response.choices[0].message.content or ""
+
+        except Exception as e:
+            return f"[Errore LLM: {e}]"
+
+
+class _TextChunk:
+    """Helper per compatibilità streaming con il codice UI esistente."""
+
+    def __init__(self, text: str):
+        self.text = text
+
+
+def create_ollama_client(
+    model: str,
+    system_prompt: str,
+    temperature: float = 0.1,
+    base_url: str = "http://localhost:11434/v1",
+) -> OllamaClient:
+    """
+    Factory per creare un client Ollama configurato.
 
     Args:
-        base_url: URL completo del server (es. "http://192.168.1.10:11434/v1")
+        model: Nome modello Ollama (es. "llama3.2:3b")
+        system_prompt: System prompt per l'agente
+        temperature: Temperatura generazione (default 0.1 per lavoro contabile)
+        base_url: URL base API Ollama
 
     Returns:
-        Lista di nomi modelli disponibili sul server remoto
+        OllamaClient configurato
     """
-    try:
-        # Rimuovi /v1 se presente, aggiungi /api/tags
-        api_url = base_url.replace("/v1", "").rstrip("/") + "/api/tags"
-
-        response = requests.get(api_url, timeout=10)
-        response.raise_for_status()
-
-        data = response.json()
-        models = []
-
-        # L'API Ollama ritorna: {"models": [{"name": "llama3.2:latest", ...}, ...]}
-        for model_info in data.get("models", []):
-            model_name = model_info.get("name", "")
-            if model_name:
-                models.append(model_name)
-
-        return models
-
-    except Exception as e:
-        print(f"⚠️ Errore recupero modelli remoti da {base_url}: {e}")
-        return []
+    return OllamaClient(
+        model=model,
+        system_prompt=system_prompt,
+        temperature=temperature,
+        base_url=base_url,
+    )
 
 
+# Alias per compatibilità con codice esistente che usa create_client
 def create_client(
-    connection_type: str, 
-    provider: str, 
-    api_key: str, 
-    model: str, 
-    system_prompt: str, 
-    base_url: str, 
-    temperature: float
-) -> Any:
+    connection_type: str,
+    provider: str,
+    api_key: str,
+    model: str,
+    system_prompt: str,
+    base_url: str,
+    temperature: float,
+) -> OllamaClient:
     """
-    Crea client LLM in base alla configurazione.
-    
-    Supporta:
-    - Cloud provider (OpenAI, Anthropic, Google)
-    - Remote host (OpenAI-like API)
-    - Local Ollama
-    
+    Compatibilità con l'interfaccia originale — crea sempre un client Ollama.
+
     Args:
-        connection_type: "Cloud provider" | "Remote host" | "Local (Ollama)"
-        provider: Nome provider cloud (se applicabile)
-        api_key: API key
+        connection_type: Ignorato (sempre Ollama locale)
+        provider: Ignorato
+        api_key: Ignorato (Ollama non richiede autenticazione)
         model: Nome modello
         system_prompt: System prompt
-        base_url: URL base per API
-        temperature: Temperatura generazione
-        
+        base_url: URL Ollama
+        temperature: Temperatura
+
     Returns:
-        Client LLM configurato
+        OllamaClient configurato
     """
-    if connection_type == "Cloud provider":
-        if provider == "OpenAI":
-            return ClientFactory.create(
-                provider=Provider.OPENAI, 
-                api_key=api_key, 
-                model=model, 
-                temperature=temperature, 
-                system_prompt=system_prompt
-            )
-        elif provider == "Anthropic (Claude)":
-            return ClientFactory.create(
-                provider=Provider.ANTHROPIC, 
-                api_key=api_key, 
-                model=model, 
-                temperature=temperature, 
-                system_prompt=system_prompt
-            )
-        elif provider == "Google Gemini":
-            return ClientFactory.create(
-                provider=Provider.GOOGLE, 
-                api_key=api_key, 
-                model=model, 
-                temperature=temperature, 
-                system_prompt=system_prompt
-            )
-        else:
-            # Custom provider
-            return OpenAILikeClient(
-                api_key=api_key, 
-                model=model, 
-                system_prompt=system_prompt, 
-                base_url=base_url, 
-                temperature=temperature
-            )
-    else:
-        # Local (Ollama) o Remote host
-        return OpenAILikeClient(
-            api_key=api_key or "ollama", 
-            model=model, 
-            system_prompt=system_prompt, 
-            base_url=base_url, 
-            temperature=temperature
-        )
+    return OllamaClient(
+        model=model,
+        system_prompt=system_prompt,
+        temperature=temperature,
+        base_url=base_url or "http://localhost:11434/v1",
+    )

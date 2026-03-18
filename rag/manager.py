@@ -58,8 +58,11 @@ class KnowledgeBaseManager:
         self.chunker = chunker
     
     def index_documents(
-        self, 
-        progress_callback: Callable[[str, float], None] = None
+        self,
+        folder_path: str = None,
+        extensions: List[str] = None,
+        recursive: bool = True,
+        progress_callback: Callable[[str, float], None] = None,
     ) -> bool:
         """
         Indicizza tutti i documenti dalla sorgente.
@@ -75,10 +78,19 @@ class KnowledgeBaseManager:
         Returns:
             True se indicizzazione completata con successo
         """
+        # Se folder_path fornito, configura LocalFolderAdapter al volo
+        if folder_path:
+            from .adapters.local_folder import LocalFolderAdapter
+            self.adapter = LocalFolderAdapter({
+                "folder_path": folder_path,
+                "extensions": extensions or [".md", ".txt", ".pdf", ".xml"],
+                "recursive": recursive,
+            })
+
         if not self.adapter:
             print("❌ Nessun adapter configurato")
             return False
-        
+
         # 1. Carica documenti
         if progress_callback:
             progress_callback("📂 Caricamento documenti...", 0.1)

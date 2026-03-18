@@ -133,6 +133,16 @@ htmlcov/
 *.spec
 
 # =============================================================================
-# File specifici da ignorare
+# AccountantNanoBot — dati sensibili clienti (MAI committare)
 # =============================================================================
-# Aggiungi qui file specifici del tuo ambiente se necessario
+
+# Fatture e documenti clienti reali
+FATTURE/
+data/fatture_xml/
+data/documenti/
+data/*.db
+data/config.yaml
+
+# Memoria interna Claude Code
+.claude/
+memory/

@@ -1,34 +1,35 @@
-# =============================================================================
-# Datapizza Streamlit LLM Interface v1.5.1
-# =============================================================================
-# IMPORTANTE: Ordine di installazione!
-# 1. Prima: datapizza-ai
-# 2. Dopo: datapizza-ai-clients-openai-like
-# =============================================================================
+# AccountantNanoBot v1.0.0
+# Sistema contabile multi-agente con Ollama + RAG + Streamlit
 
 # Core Framework
 streamlit>=1.28.0
 python-dotenv>=1.0.0
 pyyaml>=6.0
 
-# Datapizza AI (installare PRIMA dei clients!)
-datapizza-ai
-
-# Datapizza Clients (installare DOPO datapizza-ai!)
-datapizza-ai-clients-openai-like
+# LLM Client (Ollama via OpenAI-compatible API)
+openai>=1.0.0
 
 # Knowledge Base / RAG
 chromadb>=0.4.0
 beautifulsoup4>=4.12.0
 PyPDF2>=3.0.0
 
-# Wiki Adapters
-mwclient>=0.10.0      # MediaWiki
-dokuwiki>=0.1.0       # DokuWiki
-
 # Export
 reportlab>=4.0.0
 
-# v1.5.0 - File Upload
+# Document Processing
 python-docx>=0.8.0
 Pillow>=10.0.0
+
+# XML Parser (FatturaPA)
+lxml>=5.0.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Agent Orchestration
+langchain>=0.3.0
+langchain-ollama>=0.2.0
+
+# Dev utilities
+requests>=2.31.0

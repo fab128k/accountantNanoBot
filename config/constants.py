@@ -1,5 +1,5 @@
 # config/constants.py
-# DeepAiUG v1.5.0 - Costanti globali
+# AccountantNanoBot v1.0.0 - Costanti globali
 # ============================================================================
 
 from pathlib import Path
@@ -8,30 +8,24 @@ from pathlib import Path
 # VERSIONE
 # ============================================================================
 
-VERSION = "1.12.1"
+VERSION = "1.0.0"
 VERSION_STRING = f"v{VERSION}"
-VERSION_DESCRIPTION = "Fix installer Windows"
+APP_NAME = "AccountantNanoBot"
 
 # ============================================================================
 # PATHS
 # ============================================================================
 
-# Base directory (parent della cartella config)
 BASE_DIR = Path(__file__).parent.parent
 
-# Directory per dati
 CONVERSATIONS_DIR = BASE_DIR / "conversations"
 KNOWLEDGE_BASE_DIR = BASE_DIR / "knowledge_base"
-WIKI_CACHE_DIR = BASE_DIR / "wiki_cache"
 SECRETS_DIR = BASE_DIR / "secrets"
-
-# File di configurazione
-WIKI_CONFIG_FILE = BASE_DIR / "wiki_sources.yaml"
-WIKI_CONFIG_ALT = BASE_DIR / "config" / "wiki_sources.yaml"
-REMOTE_SERVERS_CONFIG_FILE = BASE_DIR / "remote_servers.yaml"
-REMOTE_SERVERS_CONFIG_ALT = BASE_DIR / "config" / "remote_servers.yaml"
-SECURITY_SETTINGS_FILE = BASE_DIR / "security_settings.yaml"
-SECURITY_SETTINGS_ALT = BASE_DIR / "config" / "security_settings.yaml"
+DATA_DIR = BASE_DIR / "data"
+DB_PATH = DATA_DIR / "accounting.db"
+FATTURE_DIR = DATA_DIR / "fatture_xml"
+DOCUMENTI_DIR = DATA_DIR / "documenti"
+COMPANY_CONFIG_FILE = DATA_DIR / "config.yaml"
 
 # ============================================================================
 # DEFAULTS - CONVERSAZIONE
@@ -44,9 +38,18 @@ DEFAULT_MAX_TOKENS_ESTIMATE = 8000
 # DEFAULTS - RAG
 # ============================================================================
 
-DEFAULT_CHUNK_SIZE = 1000  # caratteri
-DEFAULT_CHUNK_OVERLAP = 200  # caratteri
-DEFAULT_TOP_K_RESULTS = 5  # documenti per query
+DEFAULT_CHUNK_SIZE = 1000
+DEFAULT_CHUNK_OVERLAP = 200
+DEFAULT_TOP_K_RESULTS = 5
+
+# ============================================================================
+# DEFAULTS - AGENTI
+# ============================================================================
+
+DEFAULT_AGENT_TEMPERATURE = 0.1  # Bassa per lavoro contabile deterministico
+CURRENT_FISCAL_YEAR = 2025
+OLLAMA_BASE_URL = "http://localhost:11434/v1"
+DEFAULT_MODEL = "llama3.2:3b"
 
 # ============================================================================
 # FORMATI FILE SUPPORTATI
@@ -58,6 +61,46 @@ SUPPORTED_EXTENSIONS = {
     ".html": "HTML",
     ".htm": "HTML",
     ".pdf": "PDF",
+    ".docx": "Word",
+    ".xml": "XML / FatturaPA",
+}
+
+SUPPORTED_DOCUMENT_EXTENSIONS = [".pdf", ".txt", ".md", ".docx", ".xml"]
+
+# ============================================================================
+# IVA E FISCO
+# ============================================================================
+
+ALIQUOTE_IVA = {
+    "ordinaria": 22,
+    "ridotta_1": 10,
+    "ridotta_2": 5,
+    "super_ridotta": 4,
+    "esente": 0,
+    "esclusa": 0,
+    "fuori_campo": 0,
+}
+
+TIPI_DOCUMENTO_FATTURA = {
+    "TD01": "Fattura",
+    "TD02": "Acconto/anticipo su fattura",
+    "TD03": "Acconto/anticipo su parcella",
+    "TD04": "Nota di credito",
+    "TD05": "Nota di debito",
+    "TD06": "Parcella",
+    "TD16": "Integrazione fattura reverse charge interno",
+    "TD17": "Integrazione/autofattura per acquisto servizi dall'estero",
+    "TD18": "Integrazione per acquisto di beni intracomunitari",
+    "TD19": "Integrazione/autofattura per acquisto di beni ex art.17 c.2 DPR 633/72",
+    "TD20": "Autofattura per regolarizzazione e integrazione delle fatture",
+    "TD21": "Autofattura per splafonamento",
+    "TD22": "Estrazione beni da Deposito IVA",
+    "TD23": "Estrazione beni da Deposito IVA con versamento dell'IVA",
+    "TD24": "Fattura differita di cui all'art.21, comma 4, lett. a",
+    "TD25": "Fattura differita di cui all'art.21, comma 4, terzo periodo lett. b",
+    "TD26": "Cessione di beni ammortizzabili e per passaggi interni",
+    "TD27": "Fattura per autoconsumo o per cessioni gratuite senza rivalsa",
+    "TD28": "Acquisti da San Marino con IVA (fattura cartacea)",
 }
 
 # ============================================================================
@@ -79,8 +122,15 @@ CONTENT_OPTIONS = {
 }
 
 # ============================================================================
-# UI - COLORI
+# UI - COLORI TEMA PROFESSIONALE
 # ============================================================================
+
+PRIMARY_COLOR = "#1a3a5c"       # Blu scuro professionale
+SECONDARY_COLOR = "#2d6a9f"     # Blu medio
+BACKGROUND_COLOR = "#f5f7fa"    # Sfondo chiaro
+SUCCESS_COLOR = "#28a745"       # Verde successo
+WARNING_COLOR = "#ffc107"       # Giallo avviso
+DANGER_COLOR = "#dc3545"        # Rosso errore
 
 USER_MESSAGE_COLOR = "#E3F2FD"
 ASSISTANT_MESSAGE_COLOR = "#F5F5F5"
@@ -88,148 +138,24 @@ USER_MESSAGE_COLOR_DARK = "#1E3A5F"
 ASSISTANT_MESSAGE_COLOR_DARK = "#2D2D2D"
 
 # ============================================================================
-# PROVIDERS CLOUD
+# FILE UPLOAD IN CHAT
 # ============================================================================
 
-CLOUD_PROVIDERS = {
-    "OpenAI": {
-        "key_name": "openai",
-        "env_var": "OPENAI_API_KEY",
-        "default_model": "gpt-4o-mini",
-        "base_url": "https://api.openai.com/v1",
-    },
-    "Anthropic (Claude)": {
-        "key_name": "anthropic",
-        "env_var": "ANTHROPIC_API_KEY",
-        "default_model": "claude-sonnet-4-20250514",
-        "base_url": "https://api.anthropic.com",
-    },
-    "Google Gemini": {
-        "key_name": "google",
-        "env_var": "GOOGLE_API_KEY",
-        "default_model": "gemini-1.5-pro",
-        "base_url": "https://generativelanguage.googleapis.com",
-    },
-    "Custom": {
-        "key_name": "custom",
-        "env_var": "CUSTOM_API_KEY",
-        "default_model": "",
-        "base_url": "",
-    },
-}
+ALLOWED_UPLOAD_TYPES = ["pdf", "txt", "md", "docx", "xml", "png", "jpg", "jpeg"]
 
-# ============================================================================
-# MEDIAWIKI DEFAULTS
-# ============================================================================
-
-MEDIAWIKI_DEFAULT_USER_AGENT = f"DeepAiUGBot/{VERSION}"
-MEDIAWIKI_DEFAULT_REQUEST_DELAY = 0.5
-MEDIAWIKI_DEFAULT_BATCH_SIZE = 50
-MEDIAWIKI_DEFAULT_TIMEOUT = 30
-
-# ============================================================================
-# WIKI TYPES SUPPORTATI
-# ============================================================================
-
-WIKI_TYPES = {
-    "mediawiki": {
-        "name": "MediaWiki",
-        "icon": "🌐",
-        "description": "Wikipedia, wiki aziendali (mwclient)",
-        "package": "mwclient",
-    },
-    "dokuwiki": {
-        "name": "DokuWiki",
-        "icon": "📘",
-        "description": "Wiki leggera per documentazione tecnica",
-        "package": "dokuwiki",
-    },
-    "local": {
-        "name": "Cartella Locale",
-        "icon": "📁",
-        "description": "File locali (MD, TXT, HTML, PDF)",
-        "package": None,
-    },
-}
-
-# ============================================================================
-# FILE UPLOAD IN CHAT - v1.5.0
-# ============================================================================
-
-# Estensioni per st.file_uploader (senza punto)
-ALLOWED_UPLOAD_TYPES = ["pdf", "txt", "md", "docx", "png", "jpg", "jpeg", "gif", "webp"]
-
-# Pattern per rilevare modelli Vision (case-insensitive)
 VISION_MODEL_PATTERNS = [
     "llava",
     "llava-llama3",
     "llava-phi3",
-    "llava-v1.6",
-    "granite3-vision",
-    "granite3.2-vision",
     "moondream",
-    "bakllava",
-    "cogvlm",
-    "fuyu",
     "minicpm-v",
 ]
 
-# Limiti upload
 MAX_FILE_SIZE_MB = 10
 MAX_DOCUMENT_CHARS = 50000
 
 # ============================================================================
-# SOCRATIC MODES - v1.8.0
+# NAMESPACE XML FATTURA PA
 # ============================================================================
 
-SOCRATIC_MODES = {
-    "fast": {
-        "name": "Veloce",
-        "icon": "🚀",
-        "description": "Nessun bottone socratico - risposte immediate",
-        "show_buttons": False,
-        "show_reflection_invite": False,
-    },
-    "standard": {
-        "name": "Standard",
-        "icon": "⚖️",
-        "description": "Bottoni socratici visibili sotto le risposte",
-        "show_buttons": True,
-        "show_reflection_invite": False,
-    },
-    "socratic": {
-        "name": "Socratico",
-        "icon": "🧠",
-        "description": "Bottoni + invito esplicito a riflettere",
-        "show_buttons": True,
-        "show_reflection_invite": True,
-    },
-}
-
-DEFAULT_SOCRATIC_MODE = "standard"
-
-# ============================================================================
-# SESSION MAP - v1.10.0
-# ============================================================================
-
-SESSION_MAP_MODES = {
-    "progressive": {
-        "name": "Progressiva",
-        "icon": "🔄",
-        "description": "La mappa si aggiorna dopo ogni risposta, visibile dopo N domande",
-    },
-    "threshold": {
-        "name": "A soglia",
-        "icon": "🔔",
-        "description": "Nudge dopo N domande — l'utente decide se aprire la mappa",
-    },
-    "off": {
-        "name": "Disattivata",
-        "icon": "⏹️",
-        "description": "Nessuna mappa, nessun nudge",
-    },
-}
-
-DEFAULT_SESSION_MAP_MODE = "threshold"
-SESSION_MAP_NUDGE_THRESHOLD = 5
-SESSION_MAP_PROGRESSIVE_VISIBLE_AFTER = 4
+FATTURA_PA_NAMESPACE = "urn:www.agenziaentrate.gov.it:specificheTecniche:sdi:fatturapa:v1.2"

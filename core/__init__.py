@@ -4,8 +4,9 @@
 
 from .llm_client import (
     get_local_ollama_models,
-    get_remote_ollama_models,
     create_client,
+    create_ollama_client,
+    OllamaClient,
 )
 
 from .persistence import (
@@ -32,8 +33,9 @@ from .conversation import (
 __all__ = [
     # LLM Client
     "get_local_ollama_models",
-    "get_remote_ollama_models",
     "create_client",
+    "create_ollama_client",
+    "OllamaClient",
     # Persistence
     "ensure_conversations_dir",
     "get_conversation_filename",
