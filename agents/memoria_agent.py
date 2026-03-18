@@ -4,8 +4,13 @@
 
 from __future__ import annotations
 
-from agents.base_agent import BaseAccountingAgent
+from typing import TYPE_CHECKING
+
+from swarm.base import BaseSwarmAgent
 from config.constants import DEFAULT_AGENT_TEMPERATURE
+
+if TYPE_CHECKING:
+    from swarm.context import ProcessingContext
 
 
 def _build_system_prompt(company_name: str = "", company_piva: str = "") -> str:
@@ -33,7 +38,7 @@ Quando rispondi:
 - Rispondi in italiano in modo chiaro e professionale"""
 
 
-class MemoriaAgent(BaseAccountingAgent):
+class MemoriaAgent(BaseSwarmAgent):
     """
     Agente RAG generico per domande contabili/fiscali.
 
@@ -58,6 +63,20 @@ class MemoriaAgent(BaseAccountingAgent):
         )
         self.company_name = company_name
         self.company_piva = company_piva
+
+    def process(self, context: "ProcessingContext") -> "ProcessingContext":
+        """
+        Processa il contesto swarm. Se c'e' un user_message in metadata,
+        risponde usando la knowledge base RAG.
+        """
+        user_message = context.metadata.get('user_message', '')
+        if user_message:
+            try:
+                response = self.ask(user_message)
+                context.metadata['response'] = response
+            except Exception as e:
+                context.errors.append(f"Errore memoria agent: {e}")
+        return context
 
     def update_company_info(self, company_name: str, company_piva: str) -> None:
         """

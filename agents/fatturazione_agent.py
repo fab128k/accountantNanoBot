@@ -5,10 +5,13 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, TYPE_CHECKING
 
-from agents.base_agent import BaseAccountingAgent
+from swarm.base import BaseSwarmAgent
 from config.constants import DEFAULT_AGENT_TEMPERATURE
+
+if TYPE_CHECKING:
+    from swarm.context import ProcessingContext
 
 
 _SYSTEM_PROMPT = """Sei un esperto contabile italiano specializzato nella gestione
@@ -32,7 +35,7 @@ Regole fondamentali:
 Rispondi in italiano, in modo preciso e professionale."""
 
 
-class FatturazioneAgent(BaseAccountingAgent):
+class FatturazioneAgent(BaseSwarmAgent):
     """
     Agente specializzato nella gestione fatture e prima nota.
 
@@ -52,6 +55,27 @@ class FatturazioneAgent(BaseAccountingAgent):
             temperature=DEFAULT_AGENT_TEMPERATURE,
             base_url=base_url,
         )
+
+    def process(self, context: "ProcessingContext") -> "ProcessingContext":
+        """
+        Processa il contesto swarm. Se current_file e' un XML FatturaPA,
+        lo analizza e scrive il risultato in context.metadata.
+        """
+        if context.current_file and str(context.current_file).lower().endswith('.xml'):
+            try:
+                xml_bytes = context.current_file.read_bytes()
+                company_piva = context.metadata.get('company_piva', '')
+                fattura, registrazione, errore = self.analizza_xml_bytes(
+                    xml_bytes, company_piva=company_piva
+                )
+                if fattura and registrazione:
+                    context.metadata['fattura'] = fattura
+                    context.metadata['registrazione_suggerita'] = registrazione
+                elif errore:
+                    context.errors.append(errore)
+            except Exception as e:
+                context.errors.append(f"Errore processing fattura {context.current_file}: {e}")
+        return context
 
     def processa_fattura(
         self,
