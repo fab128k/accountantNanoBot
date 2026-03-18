@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-stack-cleanup-01-PLAN.md
-last_updated: "2026-03-18T16:26:48.261Z"
+stopped_at: Completed 01-stack-cleanup-02-PLAN.md
+last_updated: "2026-03-18T16:31:17.823Z"
 last_activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01-stack-cleanup P01 | 2 | 2 tasks | 3 files |
+| Phase 01-stack-cleanup P02 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - [Phase 01-stack-cleanup]: Removed LangChain, SQLAlchemy, PyPDF2, beautifulsoup4 from requirements; added pypdf>=4.0.0 and sentence-transformers>=3.0.0
 - [Phase 01-stack-cleanup]: pypdf is drop-in replacement for PyPDF2 (same maintainer, not deprecated)
 - [Phase 01-stack-cleanup]: sentence-transformers added now for quality Italian-language embeddings in ChromaDB RAG pipeline
+- [Phase 01-stack-cleanup]: SentenceTransformerEmbeddingFunction from chromadb.utils used — ChromaDB handles embedding calls transparently for add/query
+- [Phase 01-stack-cleanup]: Missing sentence-transformers raises ImportError (not silent fallback) — RAG without multilingual embeddings is non-functional for Italian text
+- [Phase 01-stack-cleanup]: Collection metadata stores embedding_model key to detect incompatible existing collections and trigger silent recreation
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T16:26:48.256Z
-Stopped at: Completed 01-stack-cleanup-01-PLAN.md
+Last session: 2026-03-18T16:31:17.818Z
+Stopped at: Completed 01-stack-cleanup-02-PLAN.md
 Resume file: None
