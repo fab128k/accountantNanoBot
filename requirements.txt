@@ -11,25 +11,20 @@ openai>=1.0.0
 
 # Knowledge Base / RAG
 chromadb>=0.4.0
-beautifulsoup4>=4.12.0
-PyPDF2>=3.0.0
+sentence-transformers>=3.0.0
+
+# PDF Processing
+pypdf>=4.0.0
 
 # Export
 reportlab>=4.0.0
 
 # Document Processing
-python-docx>=0.8.0
+python-docx>=1.1.0
 Pillow>=10.0.0
 
 # XML Parser (FatturaPA)
 lxml>=5.0.0
-
-# Database
-sqlalchemy>=2.0.0
-
-# Agent Orchestration
-langchain>=0.3.0
-langchain-ollama>=0.2.0
 
 # Dev utilities
 requests>=2.31.0
