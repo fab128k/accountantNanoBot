@@ -31,8 +31,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 01-01-PLAN.md — Remove dead dependencies from requirements.txt and replace PyPDF2 with pypdf in all imports
-- [ ] 01-02-PLAN.md — Configure ChromaDB with multilingual sentence-transformers embedding model
+- [x] 01-01-PLAN.md — Remove dead dependencies from requirements.txt and replace PyPDF2 with pypdf in all imports
+- [x] 01-02-PLAN.md — Configure ChromaDB with multilingual sentence-transformers embedding model
 
 ### Phase 2: Swarm Architecture
 **Goal**: A shared ProcessingContext and standard BaseSwarmAgent interface exist, and all existing agents conform to the pattern
@@ -43,7 +43,11 @@ Plans:
   2. A ProcessingContext instance can be passed between two agents sequentially, accumulating results from each step
   3. The existing fatturazione_agent, memoria_agent, and orchestrator work correctly through the Streamlit UI after migration to BaseSwarmAgent
   4. The orchestrator routes a user chat message to the correct agent using the new pattern without regression
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Create swarm/ package with ProcessingContext dataclass and BaseSwarmAgent ABC
+- [ ] 02-02-PLAN.md — Migrate agents to BaseSwarmAgent and add route_with_context() to Orchestrator
 
 ### Phase 3: Client Folder Scanner
 **Goal**: The user can point the system at a client folder and immediately see which files were found, classified by type, before any processing begins
@@ -74,6 +78,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Stack Cleanup | 2/2 | Complete   | 2026-03-18 |
-| 2. Swarm Architecture | 0/TBD | Not started | - |
+| 2. Swarm Architecture | 0/2 | Planning complete | - |
 | 3. Client Folder Scanner | 0/TBD | Not started | - |
 | 4. Pipeline A Ingestion | 0/TBD | Not started | - |
