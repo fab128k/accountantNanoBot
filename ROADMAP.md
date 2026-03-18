@@ -1,362 +1,240 @@
-# 🗺️ ROADMAP - DeepAiUG Streamlit Interface
+# ROADMAP — AccountantNanoBot
 
-Piano di sviluppo del progetto.
-
----
-
-## 🧠 Visione: Strumento Socratico
-
-A partire dalla v1.6.1, DeepAiUG abbraccia una nuova filosofia ispirata al **capitale semantico** (Floridi/Quartarone):
-
-> **DeepAiUG non è un oracolo che dà risposte, ma uno strumento che aiuta a costruire SENSO.**
-
-L'AI produce significato plausibile, ma il **senso** lo costruisce l'umano. Le feature "socratiche" stimolano:
-1. **Costruzione di senso** - collegare informazioni
-2. **Valutazione semantica** - capire cosa conta
-3. **Contestualizzazione** - collocare nel contesto giusto
-4. **Resistenza alla plausibilità** - non fidarsi del "suona giusto"
-
-### Scelta di Design
-L'approccio socratico è **OPZIONALE** (3 livelli: Veloce/Standard/Socratico).
-Libertà di scelta = valore fondamentale. **Nessuno forzato.**
+Piano di sviluppo verso la prima release pubblica (v1.0.0).
 
 ---
 
-## 📊 Overview Versioni
+## Visione
+
+Sistema multi-agente per gestione contabile e fiscale italiana.
+L'utente punta alla cartella del cliente, poi comanda in chat.
+Calcoli deterministici in Python. LLM solo per chat e classificazione.
+Tutto locale, nessun dato del cliente in cloud.
+
+Vedi [PHILOSOPHY.md](PHILOSOPHY.md) per le scelte architetturali.
+Vedi [REVENUE_MODEL.md](REVENUE_MODEL.md) per il modello di business.
+
+---
+
+## Stato attuale — v0.1.0 (2026-03-18)
+
+Funzionante: parser FatturaPA, partita doppia, agenti base, RAG, UI Streamlit.
+
+Non ancora funzionante: pipeline ingestion completa, moduli IVA/LIPE,
+profilo cliente con override chain, installer, SDI.
+
+---
+
+## Milestone 0 — Pulizia stack
+
+**Prerequisito per tutto il resto. Fare prima di qualsiasi sviluppo funzionale.**
+
+- [ ] **Rimuovi LangChain** (`langchain`, `langchain-ollama`) da requirements.txt.
+  Riscrivi `core/llm_client.py` con openai SDK nativo.
+  `base_agent.py` usa `client.invoke()` / `client.stream_invoke()` LangChain:
+  sostituire con `openai.chat.completions.create(stream=True/False)`.
+
+- [ ] **Rimuovi SQLAlchemy** da requirements.txt.
+  Non e' usato: `accounting/db.py` gia' usa `sqlite3` stdlib nativo.
+
+- [ ] **Sostituisci PyPDF2 con pypdf**.
+  PyPDF2 e' ufficialmente deprecato. `pypdf>=4.0.0` e' drop-in replacement
+  dello stesso maintainer.
+
+- [ ] **Aggiungi sentence-transformers**.
+  Per embedding semantici multilingua in ChromaDB.
+  Modello: `paraphrase-multilingual-MiniLM-L12-v2` (420MB).
+  Senza embedding di qualita' il RAG su testi italiani non funziona bene.
+
+**requirements.txt target dopo pulizia:**
+```
+streamlit>=1.28.0
+python-dotenv>=1.0.0
+openai>=1.0.0
+lxml>=5.0.0
+chromadb>=0.4.0
+sentence-transformers>=3.0.0
+pypdf>=4.0.0
+pdfplumber>=0.11.0
+python-docx>=1.1.0
+reportlab>=4.0.0
+Pillow>=10.0.0
+pyyaml>=6.0
+requests>=2.31.0
+```
+
+---
+
+## Milestone 1 — Core engine stabile (v0.2.0)
+
+Obiettivo: il sistema indicizza una cartella cliente reale e propone
+registrazioni corrette per tutte le fatture XML trovate.
+
+- [ ] **swarm/context.py** — `ProcessingContext` condiviso tra agenti
+  (cliente corrente, fatture caricate, stato ingestion, log operazioni)
+
+- [ ] **swarm/base.py** — classe base per agenti sequenziali con accesso
+  al contesto condiviso
+
+- [ ] **ClientFolderScanner** — scansione ricorsiva cartella cliente,
+  rilevamento automatico file XML/PDF/DOCX/ZIP, coda ingestion
+
+- [ ] **Pipeline A — ingestion fatture XML**
+  - Scansione cartella → lista file FatturaPA
+  - Parse XML con `parsers/fattura_pa.py` esistente
+  - Generazione prima nota con `accounting/prima_nota.py` esistente
+  - Proposta registrazione per review umana
+  - Salvataggio in SQLite dopo conferma
+
+- [ ] **Profilo cliente — struttura dati**
+  - Tabella `profilo_azienda` in SQLite: ATECO, regime fiscale,
+    partita IVA, tipo attivita', note
+  - Tabella `regole_override`: fornitore/tipo_spesa → aliquota IVA,
+    percentuale deducibilita', motivazione, data conferma
+  - Override chain applicato deterministicamente in prima nota
+
+- [ ] **UI onboarding** — selezione cartella, wizard profilo cliente,
+  conferma automatica ATECO → categoria fiscale
+
+---
+
+## Milestone 2 — Moduli fiscali deterministici (v0.3.0)
+
+Obiettivo: generare liquidazione IVA e LIPE correte, con alert scadenze.
+Tutto Python puro, zero LLM.
+
+- [ ] **Liquidazione IVA periodica**
+  - Calcolo IVA a debito/credito da registrazioni del periodo
+  - Supporto contribuenti mensili e trimestrali
+  - Generazione prospetto liquidazione in PDF (reportlab)
+  - Generazione dati per F24 (XML strutturato)
+
+- [ ] **LIPE — Liquidazioni Periodiche IVA**
+  - Generazione automatica comunicazione quadro VP
+  - Calcolo dati da liquidazioni periodiche gia' effettuate
+  - Scadenze trimestrali (maggio, agosto, novembre, febbraio)
+  - Export XML nel formato AdE
+
+- [ ] **Scadenzario fiscale attivo**
+  - Database scadenze parametrizzato su regime fiscale del cliente
+    (estratto da `profilo_azienda`)
+  - Alert preventivi a 30/15/7 giorni (notifica in UI)
+  - Copertura: F24, LIPE, dichiarazioni, scadenze SDI
+
+- [ ] **Alert regime forfettario**
+  - Monitor ricavi vs soglia 85.000 EUR
+  - Alert a 75.000, 80.000, 85.000 EUR con proiezione a fine anno
+  - Suggerimento automatico in advisory chat
+
+---
+
+## Milestone 3 — Pipeline B e advisory chat (v0.4.0)
+
+Obiettivo: il sistema conosce l'azienda del cliente oltre alle sue fatture,
+e risponde a domande complesse in chat.
+
+- [ ] **Pipeline B — ingestion documenti aziendali**
+  - Parser per: visura camerale (PDF/XML), contratti (PDF/DOCX),
+    bilanci (PDF), dichiarazioni fiscali pregresse (PDF)
+  - LLM estrae fatti strutturati fiscalmente rilevanti:
+    ATECO confermato, regime, soci, mandati agente, ruling AdE
+  - Proposta profilo aggiornato per conferma commercialista
+  - Salvataggio in `profilo_azienda` dopo conferma
+
+- [ ] **Nuove tabelle SQLite Layer 2**
+  - `contratti`: clienti/fornitori principali, condizioni pagamento
+  - `kpi_storici`: fatturato mensile, margini, trend
+  - `governance`: soci, cariche, deleghe
+
+- [ ] **Advisory chat — cash flow 90 giorni**
+  - Modello deterministico da fatture attive aperte + storico incassi
+  - Risposta a: "fammi una previsione di cassa per il prossimo trimestre"
+  - Grafici Streamlit interattivi (incasso atteso per settimana)
+
+- [ ] **Advisory chat — analisi ritardi pagamenti**
+  - Identifica fatture scadute per cliente
+  - Modella impatto sul cash flow
+  - Suggerisce azioni (sollecito, anticipo fatture)
+
+- [ ] **Advisory chat — ottimizzazione fiscale conversazionale**
+  - Risponde a domande come "ho 50.000 EUR di cassa, opzioni fiscali?"
+  - Solo advisory (testo), i calcoli restano deterministici e separati
+  - Context: profilo cliente + dati storici dal RAG
+
+---
+
+## Milestone 4 — Integrazioni esterne (v0.5.0)
+
+Prerequisiti normativi per distribuzione pubblica.
+
+- [ ] **Integrazione API intermediario SDI**
+  - Scegliere un intermediario abilitato AgID (Aruba, Entaksi, Namirial)
+  - Implementare adapter per trasmissione FatturaPA via API
+  - Il processing XML resta locale; solo la trasmissione finale e' esterna
+  - Opt-in esplicito dall'utente (Livello 3 revenue model)
+
+- [ ] **Conservazione sostitutiva**
+  - Adapter per servizio di conservazione certificato AgID
+  - Il sistema locale gestisce il processing, il servizio esterno
+    gestisce la conservazione legale a norma (10 anni)
+
+- [ ] **Meccanismo aggiornamenti normativi**
+  - Modulo `updater/` separato e aggiornabile indipendentemente
+  - Aggiorna: specifiche FatturaPA (attualmente v1.9, TD29/RF20/etc.),
+    aliquote IVA, tabelle CCNL, scadenze fiscali
+  - File di regole firmati scaricati da server (Livello 1 revenue model)
+  - Il core AGPL resta immutato; i dati normativi sono separati
+
+---
+
+## Milestone 5 — Distribuzione (v1.0.0)
+
+- [ ] **Fase 1 — Installer script** (alpha con studi pilota)
+  - `AVVIA.bat` (Windows): lancia Streamlit + Ollama in background,
+    apre browser su localhost:8501
+  - `avvia.sh` (Mac/Linux): equivalente per Unix
+  - `INSTALLA.bat` / `installa.sh`: installa uv, crea venv, installa
+    dipendenze, verifica/installa Ollama, scarica modello LLM,
+    crea shortcut desktop
+  - Rilevamento hardware: raccomanda modello in base alla RAM disponibile
+
+- [ ] **Fase 2 — Installer professionale** (distribuzione pubblica)
+  - Windows: Inno Setup con Python Embeddable (30MB, senza requisiti Python),
+    venv pre-configurato, shortcut desktop + voce menu Start
+  - Mac: Platypus (wrappa script .sh in .app bundle)
+  - Linux: AppImage o .deb
+  - **Non usare PyInstaller**: incompatibile con Streamlit + ChromaDB
+
+- [ ] **Hardware detection + model recommendation**
+  - Rileva RAM con `psutil` in fase onboarding
+  - Logica: <8GB → phi3:mini, 8-16GB → llama3.2:3b,
+    16-32GB → mistral:7b, >32GB → llama3.1:8b
+
+---
+
+## Backlog (post v1.0.0)
+
+- **Active learning classificazione** — ogni correzione del commercialista
+  migliora il modello di classificazione. Mapping fornitore → conto/IVA
+  salvato localmente. Il sistema impara senza mandare dati in cloud.
+
+- **Dashboard studio aggregata** (Livello 2 revenue model) — N clienti
+  gestiti dallo stesso studio, KPI cross-cliente, scadenze aggregate
+
+- **Export pacchetto cliente** — PDF + XML + report per consegna al cliente
+  o a un secondo commercialista
+
+---
+
+## Legenda
 
 ```
-v1.0.0 ✅ (2026-01-01)          Base interface + Multi-provider
-   │
-   ├─→ v1.1.0 ✅ (2026-01-02)   + Multi-turn conversations + Persistenza
-   │
-   ├─→ v1.2.0 ✅ (2026-01-04)   + Export (MD, JSON, TXT, PDF, ZIP)
-   │
-   ├─→ v1.3.0 ✅ (2026-01-05)   + Knowledge Base RAG + LocalFolder
-   │
-   ├─→ v1.3.1 ✅ (2026-01-06)   + Fix Ollama + Chunking configurabile
-   │
-   ├─→ v1.3.2 ✅ (2026-01-07)   + MediaWiki Adapter + YAML config
-   │
-   ├─→ v1.3.3 ✅ (2026-01-07)   + Ripristino Export completo
-   │
-   ├─→ v1.4.0 ✅ (2026-01-08)   + Architettura Modulare (27 moduli)
-   │
-   ├─→ v1.4.1 ✅ (2026-01-09)   + Multi-Wiki (DokuWiki) + UI migliorata
-   │
-   ├─→ v1.5.0 ✅ (2026-01-11)   + File Upload in Chat + Privacy Protection
-   │
-   ├─→ v1.5.1 ✅ (2026-01-16)   + Wiki Bugfix + Test Sources
-   │
-   ├─→ v1.6.0 ✅ (2026-01-25)   + Streaming responses (Ollama/Remote)
-   │
-   ├─→ v1.6.1 ✅ (2026-01-26)   + 🧠 Socratic Buttons (Genera alternative)
-   │
-   ├─→ v1.7.0 ✅ (2026-01-27)   + 🧠 Bottoni "Assunzioni" + "Limiti"
-   │
-   ├─→ v1.7.1 ✅ (2026-01-29)   + 🖥️ Remote YAML + 🔐 Security Settings
-   │
-   ├─→ v1.8.0 ✅ (2026-02-05)   + 🧠 UI Socratica Completa (5 bottoni + Toggle)
-   │
-   ├─→ v1.9.0 ✅ (2026-02-06)   + 📋 Socratic History + Persistence
-   │
-   ├─→ v1.9.1 ✅ (2026-02-11)   + 🎨 UI Polish + ☁️ Cloud Config + 🔒 Privacy Granulare
-   │
-   ├─→ v1.9.2 ✅ (2026-02-20)   + 🧠 Prompt Epistemologici Potenziati
-   │
-   ├─→ v1.10.0 ✅ (2026-02-23)  + 📊 Mappa Sessione (F2) — Attrito sul pensiero
-   │
-   ├─→ v1.11.0 ✅ (2026-02-24)  + 🎨 Branding + UX Polish + Bug Fix parser
-   │
-   ├─→ v1.11.1 ✅ (2026-02-27)  + 🎨 Matrix Theme
-   │
-   └─→ v2.0.0 🎯 (Q2-Q3 2026)   + Semantic Layer + Knowledge Graph
-
-✅ = Completata
+✅ = Completato
 🚧 = In sviluppo
-📋 = Pianificata
-🎯 = Obiettivo futuro
-🧠 = Feature Socratica
+[ ] = Da fare
 ```
 
 ---
 
-## ✅ Completate
-
-### v1.11.1 — Matrix Theme ✅
-**Data:** 2026-02-27
-
-**Nuovi file:**
-- `.streamlit/config.toml`: Tema Streamlit nativo (primaryColor, bg, font monospace)
-- `ui/style.py`: `inject_matrix_style()`, `_inject_css()`, `_inject_matrix_rain()`
-
-**Modifiche:**
-- [x] `app.py`: +import `inject_matrix_style`, chiamata subito dopo `st.set_page_config()`
-- [x] `ui/__init__.py`: +import e +`__all__` entry per `inject_matrix_style`
-- [x] `config/constants.py`: VERSION → 1.11.1, VERSION_DESCRIPTION → "Matrix Theme"
-- [x] `config/branding.py`: +`MATRIX_RAIN_ENABLED`, +`MATRIX_RAIN_INTENSITY`, merge scalari in `load_branding()`
-- [x] `branding.yaml`: +`matrix_rain` (on/off), +`matrix_rain_intensity` (opacità configurabile)
-- [x] CSS completo: scanlines CRT, glitch H1, tipografia (Cinzel/Exo 2/Share Tech Mono)
-- [x] Matrix rain canvas nel parent document (escape iframe), opacity configurabile
-- [x] Scrollbar teal 3px, padding-top ridotto
-
-### v1.11.0 — Branding + UX Polish ✅
-**Data:** 2026-02-24
-
-**Nuovi file:**
-- `branding.yaml`: Personalizzazione titolo, icona e banner novità
-- `config/branding.py`: `load_branding()` + 6 costanti (APP_TITLE, APP_ICON, APP_SUBTITLE, NEWS_BANNER_*)
-
-**Modifiche:**
-- [x] `config/__init__.py`: +12 export (6 branding + 4 session map)
-- [x] `app.py`: Hardcoded → costanti branding, nudge spostato in sidebar
-- [x] `ui/socratic/buttons.py`: +`_render_model_timestamp()` nei 5 expander
-- [x] `ui/socratic/session_map.py`: Parser riscritto con regex + fallback robusto
-- [x] `ui/sidebar/session_map_widget.py`: Mappa collassabile, popover tooltip, bottoni genera/rigenera
-- [x] `ui/sidebar/conversations.py`: Reset stato F2 su caricamento conversazione
-- [x] VERSION → 1.11.0
-
-### v1.10.0 — Mappa Sessione (F2) ✅
-**Data:** 2026-02-23
-**Filosofia:** Attrito sul pensiero, non sulla risposta.
-La Mappa Sessione rende visibile la cornice interpretativa invisibile
-che si costruisce domanda dopo domanda (sovrascopo — Ligas).
-Generata solo su richiesta esplicita dell'utente (delega consapevole — Quartarone).
-
-**Nuovi file:**
-- `ui/socratic/session_map.py`: SessionMapEntry, SessionMap, SessionMapAnalyzer
-- `ui/sidebar/session_map_widget.py`: settings, nudge, display, tooltip
-
-**Modifiche:**
-- [x] `config/constants.py`: +SESSION_MAP_MODES, +3 costanti, VERSION → 1.10.0
-- [x] `ui/socratic/__init__.py`: +6 export F2
-- [x] `app.py`: +4 session_state keys, logica post-risposta, nudge sidebar, reset
-- [x] 3 modalità: Progressiva / A soglia (default) / Disattivata
-- [x] Nudge una sola volta per sessione
-- [x] Tooltip "?" con crediti filosofici
-- [x] Privacy-first: stesso client LLM, nessuna rete esterna aggiuntiva
-
-### v1.9.2 — Prompt Epistemologici Potenziati ✅
-**Data:** Febbraio 2026
-**Filosofia:** Profondità epistemologica senza automazione.
-I 5 prompt socratici riscritti con framework esplicito (Floridi/Eco/Quartarone).
-Il test epistemologico resta all'umano: nessun validatore automatico AI-su-AI.
-
-**Modifiche:**
-- `ui/socratic/prompts.py`: 5 template potenziati
-  - Alternative → 3 tipi distinti (Soluzione / Framing / Assunzione)
-  - Assunzioni → tri-classificazione Fatti / Inferenze / Valutazioni + Test della Premessa
-  - Limiti → Dominio / Contesto / Modello (Lettore Implicito da Eco)
-  - Confuta → 2 livelli (Conclusioni + Struttura argomentativa)
-  - Rifletti → 3 dimensioni (Presupposizioni / Destinatario Implicito / Domanda sotto la Domanda)
-
-Nessun altro file modificato.
-
-### v1.9.1 - 🎨 UI Polish + Cloud Config + Privacy Granulare (2026-02-11)
-- [x] Chat bubble rendering unificato: singola `st.markdown()` con `markdown-it-py`
-- [x] Colori dark/light professionali: dark default, light via `@media (prefers-color-scheme: light)`
-- [x] Tipografia HTML completa dentro bolle (p, strong, a, code, pre, table, ul/ol)
-- [x] `cloud_models.yaml`: config modelli cloud YAML-based (pattern `remote_servers.yaml`)
-- [x] Sezione Cloud riscritta: YAML-first con selectbox modelli + fallback hardcoded
-- [x] Parametri LLM in `st.expander` collassabile
-- [x] `conversation_has_sensitive_content()` con euristica wiki/folder/attachments
-- [x] Icone granulari conversazioni: 📚 Wiki, 📁 Cartella, 📎 Allegati, 🔒 su cloud
-- [x] Warning cambio provider: avviso quando si passa a Cloud con dati sensibili in sessione
-- [x] 3 livelli protezione privacy: Dialog → Warning → Hard block
-
-### v1.9.0 - 📋 Socratic History + Persistence (2026-02-06)
-- [x] `SocraticExploration` dataclass (7 campi: timestamp, button_type, original_question, ai_response_snippet, socratic_result, session_id, msg_index)
-- [x] `SocraticHistory` classe con 8 metodi statici (add, get, stats, clear, serialize, load)
-- [x] Widget sidebar: conteggi, breakdown per tipo, ultime 10 esplorazioni, cancellazione con conferma
-- [x] Persistenza esplorazioni nel JSON conversazione (save/load/restore)
-- [x] Auto-save dopo ogni esplorazione socratica (dirty flag pattern)
-- [x] Sync cache UI: pulizia + ricostruzione cache expander al caricamento
-- [x] Retrocompatibilità con conversazioni senza socratic_history
-- [x] Privacy-first: dati in session_state + file locale JSON
-
-### v1.8.0 - 🧠 UI Socratica Completa (2026-02-05)
-- [x] Bottone "🎭 Confuta" - Avvocato del diavolo (punti deboli, falle logiche, controesempi)
-- [x] Bottone "🪞 Rifletti" - Sfida la DOMANDA utente (perimetro decisionale, assunzioni non dette)
-- [x] Toggle Modalità Socratica (sidebar): Veloce / Standard / Socratico
-- [x] UI raggruppata in 2 sezioni: "Analizza la risposta" + "Sfida la domanda"
-- [x] SOCRATIC_MODES dict in config/constants.py
-- [x] Passaggio user_question a render_socratic_buttons per "Rifletti"
-- [x] Rebranding completo: "Datapizza" → "DeepAiUG" in tutti i commenti
-
-### v1.7.1 - 🖥️ Remote Servers + Security (2026-01-29)
-- [x] `remote_servers.yaml` - Configurazione centralizzata server Ollama remoti
-- [x] 3 modalità operative: fixed, selectable, custom_allowed
-- [x] Lista modelli dinamica con bottone "🔄 Aggiorna modelli"
-- [x] Funzioni loader in `config/settings.py` (pattern wiki_sources)
-- [x] `security_settings.yaml` - Controllo visibilità API Keys Cloud
-- [x] Default sicuro: keys nascoste, non copiabili
-- [x] Bottone "🔄 Usa altra key" per cambio senza visualizzazione
-- [x] Rebranding: "🍕 Datapizza" → "🧠 DeepAiUG"
-- [x] Bugfix: Cloud API Key ora modificabile
-
-### v1.7.0 - 🧠 Socratic Expansion (2026-01-27)
-- [x] Bottone "🤔 Assunzioni" - Mostra assunzioni implicite della risposta
-- [x] Bottone "⚠️ Limiti" - Mostra quando la risposta non funziona
-- [x] Layout 3 bottoni indipendenti con cache separata
-- [x] 3 expander con caption contestuali
-- [x] Funzioni generate_assumptions() e generate_limits()
-
-### v1.6.1 - 🧠 Socratic Buttons (2026-01-26)
-- [x] Nuovo modulo `ui/socratic/`
-- [x] Bottone "🔄 Genera alternative" sotto ogni risposta AI
-- [x] Genera 3 interpretazioni alternative con presupposti diversi
-- [x] Cache risposte socratiche in session_state
-- [x] Integrazione con streaming esistente
-
-### v1.6.0 - Streaming Responses (2026-01-25)
-- [x] Streaming token-by-token per Ollama locale
-- [x] Streaming token-by-token per Remote host
-- [x] Implementazione con client.stream_invoke()
-- [x] UI aggiornata con st.write_stream()
-- [x] Footer rinominato: 🤖 DeepAiUG by Gilles
-
-### v1.5.x - File Upload + Privacy (2026-01-11/16)
-- [x] Upload file in chat (PDF, DOCX, TXT, MD)
-- [x] Upload immagini per modelli Vision
-- [x] Privacy-First: Upload bloccato su Cloud provider
-- [x] Privacy Dialog per passaggio Local→Cloud
-- [x] Wiki Bugfix + 4 wiki pubbliche di test
-
-### v1.4.x - Architettura Modulare (2026-01-08/09)
-- [x] Refactoring da monolite a packages (27 moduli)
-- [x] DokuWikiAdapter + Multi-Wiki support
-- [x] Entry point: `app.py`
-
-### v1.3.x - Knowledge Base RAG (2026-01-05/07)
-- [x] Sistema RAG completo con ChromaDB
-- [x] LocalFolderAdapter + MediaWikiAdapter
-- [x] Chunking intelligente configurabile
-- [x] Privacy mode (blocco cloud con KB)
-
-### v1.0.0 → v1.2.0 - Base (2026-01-01/04)
-- [x] Multi-provider: Ollama, Remote, Cloud
-- [x] Conversazioni multi-turno + Persistenza
-- [x] Export: MD, JSON, TXT, PDF, ZIP
-
----
-
-## 📋 Pianificate
-
-### v2.0.0 - Preparazione Semantic Layer
-- [ ] Metadati JSON-LD sui documenti
-- [ ] Export RDF base
-- [ ] Template ontologie per settore
-- [ ] Wizard "Definisci la tua semantica"
-
----
-
-## 🎯 Obiettivi Futuri (v2.0.0)
-
-### Semantic Layer Completo
-- [ ] Knowledge Graph con NetworkX/Neo4j
-- [ ] Validazione SHACL
-- [ ] Query SPARQL
-- [ ] RAG ibrido (vector + graph)
-
-### Journaling Riflessivo
-- [ ] Salvataggio riflessioni utente
-- [ ] Tracking crescita capitale semantico
-- [ ] Report settimanale apprendimento
-
-### Docker & Deployment
-- [ ] Dockerfile ottimizzato
-- [ ] Docker Compose con Ollama
-- [ ] Deployment one-click
-
-### API REST
-- [ ] Endpoint REST per integrazioni
-- [ ] Authentication API
-- [ ] Documentazione OpenAPI
-
----
-
-## 🛠️ Architettura Attuale (v1.11.1)
-
-```
-datapizza-streamlit-interface/
-├── app.py                    # Entry point
-├── .streamlit/config.toml    # Tema Streamlit nativo (NEW v1.11.1)
-├── wiki_sources.yaml         # Config sorgenti
-├── remote_servers.yaml       # Config server remoti
-├── cloud_models.yaml         # Config modelli cloud (NEW v1.9.1)
-├── security_settings.yaml    # Impostazioni sicurezza
-├── branding.yaml             # Personalizzazione UI + Matrix rain (v1.11.0/v1.11.1)
-│
-├── config/                   # Configurazione
-│   ├── constants.py          # VERSION, PATHS, WIKI_TYPES, SOCRATIC_MODES
-│   ├── settings.py           # Loaders, API keys
-│   └── branding.py           # load_branding() + 8 costanti (v1.11.0/v1.11.1)
-│
-├── core/                     # Logica core
-│   ├── llm_client.py         # Factory LLM
-│   ├── conversation.py       # Messaggi
-│   ├── persistence.py        # Salvataggio (+ socratic_history + sensitivity detection)
-│   └── file_processors.py    # File upload extraction
-│
-├── rag/                      # Sistema RAG
-│   ├── models.py             # Document, Chunk
-│   ├── chunker.py            # TextChunker
-│   ├── vector_store.py       # ChromaDB
-│   ├── manager.py            # Orchestrazione
-│   └── adapters/
-│       ├── local_folder.py   # File locali
-│       ├── mediawiki.py      # MediaWiki
-│       └── dokuwiki.py       # DokuWiki
-│
-├── export/                   # Export
-│   └── exporters.py          # MD, JSON, TXT, PDF, ZIP
-│
-└── ui/                       # Interfaccia
-    ├── styles.py
-    ├── style.py              # Matrix Theme CSS + rain (NEW v1.11.1)
-    ├── chat.py               # Integrato con socratic
-    ├── file_upload.py
-    ├── privacy_warning.py
-    ├── socratic/             # 🧠 5 bottoni + history + session map
-    │   ├── __init__.py
-    │   ├── prompts.py        # 5 template (alternative, assumptions, limits, confute, reflect)
-    │   ├── buttons.py        # 5 bottoni + registrazione esplorazioni
-    │   ├── history.py        # SocraticExploration + SocraticHistory
-    │   ├── history_widget.py # Widget sidebar storico esplorazioni
-    │   └── session_map.py    # ⭐ SessionMap + SessionMapAnalyzer (F2)
-    └── sidebar/
-        ├── llm_config.py
-        ├── knowledge_base.py
-        ├── conversations.py  # + load socratic history
-        ├── export_ui.py
-        └── session_map_widget.py  # ⭐ Widget mappa sessione (F2)
-```
-
----
-
-## 📦 Dipendenze per Feature
-
-| Feature | Pacchetti |
-|---------|-----------|
-| Core | streamlit, datapizza-ai |
-| RAG | chromadb, beautifulsoup4, PyPDF2 |
-| MediaWiki | mwclient |
-| DokuWiki | dokuwiki |
-| Export PDF | reportlab |
-| File Upload | python-docx, Pillow |
-| Semantic (futuro) | rdflib, pyshacl, networkx |
-
----
-
-## 🤝 Come Contribuire
-
-1. Scegli una feature dalla roadmap
-2. Apri una Issue per discuterne
-3. Fork → Branch → PR
-4. Segui le convenzioni del progetto
-
-Vedi [CONTRIBUTING.md](CONTRIBUTING.md) per dettagli.
-
----
-
-*Ultimo aggiornamento: 2026-02-27*
-*DeepAiUG Streamlit Interface © 2026*
+*Ultimo aggiornamento: 2026-03-18*
+*AccountantNanoBot — GNU AGPL-3.0*
