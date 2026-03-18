@@ -66,11 +66,22 @@ def initialize_session_state():
         "ollama_base_url": OLLAMA_BASE_URL,
         # UI state
         "dashboard_messages": [],
+        # Scanner
+        "client_folder_path": "",
+        "scan_results": None,
     }
 
     for key, value in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = value
+
+    # Restore persisted client_folder_path from config.yaml
+    if not st.session_state.get("client_folder_path"):
+        from config.settings import load_company_config
+        cfg = load_company_config()
+        persisted = cfg.get("client_folder_path", "")
+        if persisted:
+            st.session_state["client_folder_path"] = persisted
 
 
 initialize_session_state()
@@ -370,6 +381,7 @@ with st.sidebar:
     pages = {
         "dashboard": ("🏠", "Dashboard"),
         "onboarding": ("⚙️", "Configurazione"),
+        "scanner": ("📁", "Scanner"),
         "fatture": ("📄", "Fatture"),
         "prima_nota": ("📒", "Prima Nota"),
         "bilancio": ("📊", "Bilancio"),
@@ -384,6 +396,32 @@ with st.sidebar:
         ):
             st.session_state["current_page"] = page_id
             st.rerun()
+
+    st.markdown("---")
+    st.markdown("### Cartella Cliente")
+    folder_input = st.text_input(
+        "Percorso cartella",
+        value=st.session_state.get("client_folder_path", ""),
+        placeholder="/home/user/clienti/rossi_srl",
+        key="sidebar_folder_input",
+        label_visibility="collapsed",
+    )
+    if st.button("Scansiona", use_container_width=True, type="primary"):
+        from pathlib import Path
+        from config.settings import load_company_config, save_company_config
+        from scanner.client_folder_scanner import ClientFolderScanner
+
+        st.session_state["client_folder_path"] = folder_input
+        # Persist to config.yaml
+        cfg = load_company_config()
+        cfg["client_folder_path"] = folder_input
+        save_company_config(cfg)
+        # Run scan
+        scanner = ClientFolderScanner()
+        result = scanner.scan(Path(folder_input))
+        st.session_state["scan_results"] = result
+        st.session_state["current_page"] = "scanner"
+        st.rerun()
 
     st.markdown("---")
 
@@ -473,6 +511,10 @@ if current_page == "dashboard":
 elif current_page == "onboarding":
     from ui.pages.onboarding import render_onboarding
     render_onboarding()
+
+elif current_page == "scanner":
+    from ui.pages.scanner import render_scanner
+    render_scanner()
 
 elif current_page == "fatture":
     _render_fatture_page()
