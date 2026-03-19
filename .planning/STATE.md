@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-01-PLAN.md
-last_updated: "2026-03-18T19:44:56.572Z"
+stopped_at: Completed 03-02-PLAN.md
+last_updated: "2026-03-19T08:18:40.380Z"
 last_activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-swarm-architecture P01 | 4min | 1 tasks | 5 files |
 | Phase 02-swarm-architecture P02 | 3min | 2 tasks | 3 files |
 | Phase 03-client-folder-scanner P01 | 2min | 2 tasks | 5 files |
+| Phase 03-client-folder-scanner P03-02 | 20min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ Recent decisions affecting current work:
 - [Phase 03-client-folder-scanner]: Raw byte peek (b'FatturaElettronica' in 512 bytes) for XML classification — no lxml parse during scan, 100x faster per file
 - [Phase 03-client-folder-scanner]: scanner/ and pipeline/ have zero Streamlit imports — pure Python, fully testable without Streamlit runtime
 - [Phase 03-client-folder-scanner]: scan() returns empty ScanResult for missing/non-directory paths — no exception raised, UI layer handles error display
+- [Phase 03-client-folder-scanner]: Streamlit st.text_input must use key= only (no value=) when session_state is the source of truth — mixing both freezes the widget
+- [Phase 03-client-folder-scanner]: Sidebar input background raised to rgba(255,255,255,0.92) for dark-text readability on dark navy sidebar; ::placeholder added with muted color
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T19:44:56.565Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-03-19T08:18:40.374Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None
