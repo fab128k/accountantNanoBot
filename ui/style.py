@@ -84,13 +84,20 @@ def _inject_css() -> None:
       font-weight: 700 !important;
     }
 
-    /* Input nella sidebar */
+    /* Input nella sidebar — sfondo chiaro per massimo contrasto con il testo */
     [data-testid="stSidebar"] input,
     [data-testid="stSidebar"] textarea,
     [data-testid="stSidebar"] select {
-      background: rgba(255,255,255,0.12) !important;
-      color: #ffffff !important;
-      border-color: rgba(255,255,255,0.3) !important;
+      background: rgba(255,255,255,0.92) !important;
+      color: #0d1b2a !important;
+      border-color: rgba(255,255,255,0.6) !important;
+      border-radius: 4px !important;
+    }
+    /* Placeholder del text_input nella sidebar */
+    [data-testid="stSidebar"] input::placeholder,
+    [data-testid="stSidebar"] textarea::placeholder {
+      color: #5a7a9a !important;
+      opacity: 1 !important;
     }
 
     /* Success/info/warning nella sidebar */

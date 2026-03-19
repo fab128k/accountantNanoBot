@@ -83,6 +83,14 @@ def initialize_session_state():
         if persisted:
             st.session_state["client_folder_path"] = persisted
 
+    # Initialize sidebar_folder_input widget key from client_folder_path.
+    # MUST be done before the widget renders. Do NOT set this after first render
+    # or Streamlit will freeze the input (ignoring user edits).
+    if "sidebar_folder_input" not in st.session_state:
+        st.session_state["sidebar_folder_input"] = st.session_state.get(
+            "client_folder_path", ""
+        )
+
 
 initialize_session_state()
 
@@ -399,9 +407,10 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("### Cartella Cliente")
+    # No value= parameter: session_state["sidebar_folder_input"] initialized above
+    # controls the widget. Providing both key= and value= freezes the input.
     folder_input = st.text_input(
         "Percorso cartella",
-        value=st.session_state.get("client_folder_path", ""),
         placeholder="/home/user/clienti/rossi_srl",
         key="sidebar_folder_input",
         label_visibility="collapsed",
