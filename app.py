@@ -67,7 +67,6 @@ def initialize_session_state():
         # UI state
         "dashboard_messages": [],
         # Scanner
-        "client_folder_path": "",
         "scan_results": None,
     }
 
@@ -75,21 +74,12 @@ def initialize_session_state():
         if key not in st.session_state:
             st.session_state[key] = value
 
-    # Restore persisted client_folder_path from config.yaml
-    if not st.session_state.get("client_folder_path"):
+    # Initialize client_folder_path once per session from persisted config.
+    # client_folder_path is used directly as the widget key — single source of truth.
+    if "client_folder_path" not in st.session_state:
         from config.settings import load_company_config
         cfg = load_company_config()
-        persisted = cfg.get("client_folder_path", "")
-        if persisted:
-            st.session_state["client_folder_path"] = persisted
-
-    # Initialize sidebar_folder_input widget key from client_folder_path.
-    # MUST be done before the widget renders. Do NOT set this after first render
-    # or Streamlit will freeze the input (ignoring user edits).
-    if "sidebar_folder_input" not in st.session_state:
-        st.session_state["sidebar_folder_input"] = st.session_state.get(
-            "client_folder_path", ""
-        )
+        st.session_state["client_folder_path"] = cfg.get("client_folder_path", "")
 
 
 initialize_session_state()
@@ -407,12 +397,10 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("### Cartella Cliente")
-    # No value= parameter: session_state["sidebar_folder_input"] initialized above
-    # controls the widget. Providing both key= and value= freezes the input.
     folder_input = st.text_input(
         "Percorso cartella",
         placeholder="/home/user/clienti/rossi_srl",
-        key="sidebar_folder_input",
+        key="client_folder_path",
         label_visibility="collapsed",
     )
     if st.button("Scansiona", use_container_width=True, type="primary"):
@@ -420,8 +408,7 @@ with st.sidebar:
         from config.settings import load_company_config, save_company_config
         from scanner.client_folder_scanner import ClientFolderScanner
 
-        st.session_state["client_folder_path"] = folder_input
-        # Persist to config.yaml
+        # Persist to config.yaml (widget already updated session_state["client_folder_path"])
         cfg = load_company_config()
         cfg["client_folder_path"] = folder_input
         save_company_config(cfg)
