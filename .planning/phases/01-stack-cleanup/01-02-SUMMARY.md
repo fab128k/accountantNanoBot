@@ -68,7 +68,7 @@ Each task was committed atomically:
 
 1. **Task 1: Add multilingual embedding function and collection migration to vector_store.py** - `aefa3d1` (feat)
 
-**Plan metadata:** (to be added)
+**Plan metadata:** `e6fdfcf` (docs: complete plan)
 
 ## Files Created/Modified
 - `rag/vector_store.py` - ChromaDB vector store with SentenceTransformerEmbeddingFunction, collection migration, embedding compatibility check, and smoke test
