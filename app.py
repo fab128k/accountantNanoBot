@@ -68,6 +68,8 @@ def initialize_session_state():
         "dashboard_messages": [],
         # Scanner
         "scan_results": None,
+        "pipeline_a_results": None,      # PipelineResult or None
+        "pipeline_a_bank_results": None,  # kept for compat, actual data in PipelineResult
     }
 
     for key, value in defaults.items():
