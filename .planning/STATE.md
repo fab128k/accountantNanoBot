@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: "Checkpoint 04-02 Task 3: awaiting human verification of Pipeline A end-to-end flow"
-last_updated: "2026-03-20T12:09:19.926Z"
+stopped_at: Completed 04-02-PLAN.md — Phase 4 Pipeline A Ingestion complete
+last_updated: "2026-03-20T15:53:18.439Z"
 last_activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
 progress:
   total_phases: 4
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-client-folder-scanner P03-02 | 20min | 3 tasks | 3 files |
 | Phase 04-pipeline-a-ingestion P01 | 6min | 3 tasks | 7 files |
 | Phase 04-pipeline-a-ingestion P02 | 3min | 2 tasks | 2 files |
+| Phase 04-pipeline-a-ingestion P04-02 | 30min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,9 @@ Recent decisions affecting current work:
 - [Phase 04-pipeline-a-ingestion]: pipeline_a_results session state key holds PipelineResult; in-place r.status mutations drive UI re-render via st.rerun()
 - [Phase 04-pipeline-a-ingestion]: Bank movement _confirmed/_skipped are dynamic attributes on BankMovementResult — not persisted, reset on next Avvia elaborazione
 - [Phase 04-pipeline-a-ingestion]: CoA selectbox uses get_conti_comuni() — only commonly-used accounts shown, not full OIC chart
+- [Phase 04-pipeline-a-ingestion]: pipeline_a_results session state key holds PipelineResult; in-place r.status mutations drive UI re-render via st.rerun()
+- [Phase 04-pipeline-a-ingestion]: Bank movement _confirmed/_skipped are dynamic attributes on BankMovementResult — not persisted, reset on next Avvia elaborazione
+- [Phase 04-pipeline-a-ingestion]: CoA selectbox uses get_conti_comuni() — only commonly-used accounts shown, not full OIC chart
 
 ### Pending Todos
 
@@ -105,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T12:09:19.919Z
-Stopped at: Checkpoint 04-02 Task 3: awaiting human verification of Pipeline A end-to-end flow
+Last session: 2026-03-20T15:53:18.433Z
+Stopped at: Completed 04-02-PLAN.md — Phase 4 Pipeline A Ingestion complete
 Resume file: None
