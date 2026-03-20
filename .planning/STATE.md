@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-02-PLAN.md
-last_updated: "2026-03-20T08:55:27.139Z"
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-20T12:01:44.673Z"
 last_activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 0
 ---
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-swarm-architecture P02 | 3min | 2 tasks | 3 files |
 | Phase 03-client-folder-scanner P01 | 2min | 2 tasks | 5 files |
 | Phase 03-client-folder-scanner P03-02 | 20min | 3 tasks | 3 files |
+| Phase 04-pipeline-a-ingestion P01 | 6min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,9 @@ Recent decisions affecting current work:
 - [Phase 03-client-folder-scanner]: scan() returns empty ScanResult for missing/non-directory paths — no exception raised, UI layer handles error display
 - [Phase 03-client-folder-scanner]: Streamlit st.text_input must use key= only (no value=) when session_state is the source of truth — mixing both freezes the widget
 - [Phase 03-client-folder-scanner]: Sidebar input background raised to rgba(255,255,255,0.92) for dark-text readability on dark navy sidebar; ::placeholder added with muted color
+- [Phase 04-pipeline-a-ingestion]: db_path optional parameter in process_folder() enables test isolation without monkeypatching
+- [Phase 04-pipeline-a-ingestion]: _detect_header_row requires keyword match + date pattern in next row to prevent false positives on metadata rows
+- [Phase 04-pipeline-a-ingestion]: IBAN-CoA mapping defaults to C.IV.1 (Depositi bancari) — safe fallback when no custom mapping configured
 
 ### Pending Todos
 
@@ -97,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T08:18:40.374Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-03-20T12:01:44.667Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None

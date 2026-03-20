@@ -26,10 +26,10 @@
 
 ### Pipeline A — Ingestion
 
-- [ ] **PIPE-01**: Esiste `pipeline/pipeline_a.py` che dato un percorso cartella legge tutti i file FatturaXML, li invia al parser FatturaPA esistente, e genera per ciascuno una registrazione suggerita (prima nota)
-- [ ] **PIPE-02**: Le fatture già importate (tracked per hash SHA256 in `fatture_importate`) sono saltate automaticamente nella pipeline senza errore
-- [ ] **PIPE-03**: Esiste `pipeline/bank_statement_parser.py` che legge estratti conto in formato CSV (colonne: data, descrizione, importo, saldo) e OFX, producendo una lista di movimenti bancari strutturati
-- [ ] **PIPE-04**: Il sistema suggerisce la registrazione prima nota per ogni movimento bancario usando una mappatura IBAN→conto CoA configurabile per cliente; l'utente conferma o corregge prima del salvataggio
+- [x] **PIPE-01**: Esiste `pipeline/pipeline_a.py` che dato un percorso cartella legge tutti i file FatturaXML, li invia al parser FatturaPA esistente, e genera per ciascuno una registrazione suggerita (prima nota)
+- [x] **PIPE-02**: Le fatture già importate (tracked per hash SHA256 in `fatture_importate`) sono saltate automaticamente nella pipeline senza errore
+- [x] **PIPE-03**: Esiste `pipeline/bank_statement_parser.py` che legge estratti conto in formato CSV (colonne: data, descrizione, importo, saldo) e OFX, producendo una lista di movimenti bancari strutturati
+- [x] **PIPE-04**: Il sistema suggerisce la registrazione prima nota per ogni movimento bancario usando una mappatura IBAN→conto CoA configurabile per cliente; l'utente conferma o corregge prima del salvataggio
 
 ## v2 Requirements
 
@@ -81,10 +81,10 @@
 | SCAN-01 | Phase 3 | Complete |
 | SCAN-02 | Phase 3 | Complete |
 | SCAN-03 | Phase 3 | Complete |
-| PIPE-01 | Phase 4 | Pending |
-| PIPE-02 | Phase 4 | Pending |
-| PIPE-03 | Phase 4 | Pending |
-| PIPE-04 | Phase 4 | Pending |
+| PIPE-01 | Phase 4 | Complete |
+| PIPE-02 | Phase 4 | Complete |
+| PIPE-03 | Phase 4 | Complete |
+| PIPE-04 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 14 total
