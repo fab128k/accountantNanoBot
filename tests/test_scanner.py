@@ -142,18 +142,20 @@ class TestScannerEdgeCases:
         assert visible in result.files["TXT"]
 
 
-class TestPipelineAStub:
-    """PipelineA stub contract tests."""
+class TestPipelineAImport:
+    """PipelineA import contract tests."""
 
     def test_import(self):
         """from pipeline.pipeline_a import PipelineA succeeds."""
         from pipeline.pipeline_a import PipelineA
         assert PipelineA is not None
 
-    def test_process_folder_raises_not_implemented(self, tmp_path):
-        """PipelineA().process_folder(Path('/tmp')) raises NotImplementedError."""
-        from pipeline.pipeline_a import PipelineA
+    def test_pipeline_result_importable(self):
+        """from pipeline.pipeline_a import PipelineResult succeeds."""
+        from pipeline.pipeline_a import PipelineResult
+        assert PipelineResult is not None
 
-        pipeline = PipelineA()
-        with pytest.raises(NotImplementedError):
-            pipeline.process_folder(tmp_path)
+    def test_invoice_result_importable(self):
+        """from pipeline.pipeline_a import InvoiceResult succeeds."""
+        from pipeline.pipeline_a import InvoiceResult
+        assert InvoiceResult is not None
