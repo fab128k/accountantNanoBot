@@ -8,7 +8,7 @@ import hashlib
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
 from config.constants import DB_PATH
 
@@ -88,6 +88,34 @@ def init_db(db_path: Path = DB_PATH) -> None:
                 ON fatture_importate(data);
             CREATE INDEX IF NOT EXISTS idx_fatture_cedente
                 ON fatture_importate(cedente_piva);
+
+            -- IBAN to CoA account mapping (per-client)
+            CREATE TABLE IF NOT EXISTS iban_coa_mapping (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                iban TEXT NOT NULL UNIQUE,
+                conto_codice TEXT NOT NULL,
+                conto_nome TEXT NOT NULL,
+                note TEXT DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            -- Confirmed bank movements
+            CREATE TABLE IF NOT EXISTS movimenti_bancari (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                data DATE NOT NULL,
+                data_valuta DATE,
+                descrizione TEXT NOT NULL,
+                importo DECIMAL(15,2) NOT NULL,
+                saldo DECIMAL(15,2),
+                iban TEXT DEFAULT '',
+                hash_file TEXT DEFAULT '',
+                confermato BOOLEAN DEFAULT 0,
+                registrazione_id INTEGER REFERENCES registrazioni_prima_nota(id),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_movimenti_data ON movimenti_bancari(data);
+            CREATE INDEX IF NOT EXISTS idx_iban_mapping ON iban_coa_mapping(iban);
         """)
         conn.commit()
 
@@ -423,3 +451,106 @@ def marca_registrazione_confermata(reg_id: int, db_path: Path = DB_PATH) -> bool
         )
         conn.commit()
         return cursor.rowcount > 0
+
+
+# ============================================================================
+# IBAN-CoA MAPPING
+# ============================================================================
+
+def get_iban_coa_mapping(iban: str, db_path: Path = DB_PATH) -> Dict[str, str]:
+    """
+    Look up CoA account for an IBAN. Returns default C.IV.1 if no mapping found.
+
+    Args:
+        iban: IBAN string
+        db_path: Path al DB
+
+    Returns:
+        Dict with conto_codice and conto_nome
+    """
+    init_db(db_path)
+    default = {"conto_codice": "C.IV.1", "conto_nome": "Depositi bancari e postali"}
+    if not iban:
+        return default
+    with _get_connection(db_path) as conn:
+        row = conn.execute(
+            "SELECT conto_codice, conto_nome FROM iban_coa_mapping WHERE iban = ?",
+            (iban,)
+        ).fetchone()
+        if row:
+            return {"conto_codice": row["conto_codice"], "conto_nome": row["conto_nome"]}
+        return default
+
+
+def save_iban_coa_mapping(
+    iban: str,
+    conto_codice: str,
+    conto_nome: str,
+    note: str = "",
+    db_path: Path = DB_PATH
+) -> int:
+    """
+    Save or update an IBAN-to-CoA mapping.
+
+    Args:
+        iban: IBAN string
+        conto_codice: CoA code (e.g. "C.IV.1")
+        conto_nome: CoA name
+        note: Optional note
+        db_path: Path al DB
+
+    Returns:
+        Row ID of the inserted/updated mapping
+    """
+    init_db(db_path)
+    with _get_connection(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO iban_coa_mapping (iban, conto_codice, conto_nome, note)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(iban) DO UPDATE SET
+                conto_codice = excluded.conto_codice,
+                conto_nome = excluded.conto_nome,
+                note = excluded.note
+        """, (iban, conto_codice, conto_nome, note))
+        conn.commit()
+        return cursor.lastrowid
+
+
+# ============================================================================
+# MOVIMENTI BANCARI
+# ============================================================================
+
+def salva_movimento_bancario(
+    movement: Dict[str, Any],
+    db_path: Path = DB_PATH
+) -> int:
+    """
+    Save a confirmed bank movement to DB.
+
+    Args:
+        movement: Dict with keys: data, data_valuta, descrizione, importo, saldo, iban, hash_file
+        db_path: Path al DB
+
+    Returns:
+        Row ID of the inserted movement
+    """
+    init_db(db_path)
+    with _get_connection(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO movimenti_bancari
+                (data, data_valuta, descrizione, importo, saldo, iban, hash_file, confermato)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            movement.get("data", ""),
+            movement.get("data_valuta"),
+            movement.get("descrizione", ""),
+            float(movement.get("importo", 0)),
+            float(movement["saldo"]) if movement.get("saldo") is not None else None,
+            movement.get("iban", ""),
+            movement.get("hash_file", ""),
+            movement.get("confermato", False),
+        ))
+        conn.commit()
+        return cursor.lastrowid
