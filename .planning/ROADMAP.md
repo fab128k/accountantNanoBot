@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Stack Cleanup** - Remove dead dependencies and establish a clean technical baseline (completed 2026-03-18)
 - [x] **Phase 2: Swarm Architecture** - Implement ProcessingContext and BaseSwarmAgent foundation (completed 2026-03-18)
 - [x] **Phase 3: Client Folder Scanner** - Enable folder selection and automatic file classification from UI (completed 2026-03-20)
-- [ ] **Phase 4: Pipeline A Ingestion** - Ingest invoices and bank statements into reviewable bookkeeping entries
+- [x] **Phase 4: Pipeline A Ingestion** - Ingest invoices and bank statements into reviewable bookkeeping entries (completed 2026-03-20)
 
 ## Phase Details
 
@@ -72,7 +72,7 @@ Plans:
   2. A previously imported invoice (same SHA256 hash) is silently skipped — the user sees it marked as already imported, not as an error
   3. A CSV bank statement (with data, descrizione, importo, saldo columns) is parsed into a structured list of movements visible in the UI
   4. Each bank movement shows a suggested prima nota entry based on the IBAN→CoA mapping; the user can accept or correct each entry before it is saved to SQLite
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 04-01-PLAN.md — Pipeline A core: DB schema extension, CSV bank parser, PipelineA.process_folder() implementation with tests
@@ -88,4 +88,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Stack Cleanup | 2/2 | Complete   | 2026-03-18 |
 | 2. Swarm Architecture | 2/2 | Complete   | 2026-03-18 |
 | 3. Client Folder Scanner | 2/2 | Complete    | 2026-03-20 |
-| 4. Pipeline A Ingestion | 1/2 | In Progress|  |
+| 4. Pipeline A Ingestion | 2/2 | Complete   | 2026-03-20 |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-20T12:01:44.673Z"
+stopped_at: "Checkpoint 04-02 Task 3: awaiting human verification of Pipeline A end-to-end flow"
+last_updated: "2026-03-20T12:09:19.926Z"
 last_activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-client-folder-scanner P01 | 2min | 2 tasks | 5 files |
 | Phase 03-client-folder-scanner P03-02 | 20min | 3 tasks | 3 files |
 | Phase 04-pipeline-a-ingestion P01 | 6min | 3 tasks | 7 files |
+| Phase 04-pipeline-a-ingestion P02 | 3min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,9 @@ Recent decisions affecting current work:
 - [Phase 04-pipeline-a-ingestion]: db_path optional parameter in process_folder() enables test isolation without monkeypatching
 - [Phase 04-pipeline-a-ingestion]: _detect_header_row requires keyword match + date pattern in next row to prevent false positives on metadata rows
 - [Phase 04-pipeline-a-ingestion]: IBAN-CoA mapping defaults to C.IV.1 (Depositi bancari) — safe fallback when no custom mapping configured
+- [Phase 04-pipeline-a-ingestion]: pipeline_a_results session state key holds PipelineResult; in-place r.status mutations drive UI re-render via st.rerun()
+- [Phase 04-pipeline-a-ingestion]: Bank movement _confirmed/_skipped are dynamic attributes on BankMovementResult — not persisted, reset on next Avvia elaborazione
+- [Phase 04-pipeline-a-ingestion]: CoA selectbox uses get_conti_comuni() — only commonly-used accounts shown, not full OIC chart
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-20T12:01:44.667Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-03-20T12:09:19.919Z
+Stopped at: Checkpoint 04-02 Task 3: awaiting human verification of Pipeline A end-to-end flow
 Resume file: None
