@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: planning
-stopped_at: Completed 04-02-PLAN.md — Phase 4 Pipeline A Ingestion complete
-last_updated: "2026-03-20T16:35:01.764Z"
-last_activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
+milestone: v2.0
+milestone_name: TBD
+status: planning_next_milestone
+stopped_at: v1.0 MVP archived — ready for v2.0 planning
+last_updated: "2026-03-20T19:12:00.000Z"
+last_activity: 2026-03-20 — v1.0 MVP milestone completed and archived
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
   percent: 0
 ---
 
@@ -18,97 +18,44 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-18)
+See: .planning/PROJECT.md (updated 2026-03-20 after v1.0 milestone)
 
-**Core value:** L'utente punta alla cartella cliente, scrive in chat cosa vuole, e riceve registrazioni contabili corrette e PDF pronti — senza toccare un singolo campo manualmente.
-**Current focus:** Phase 1 — Stack Cleanup
+**Core value:** L'utente punta alla cartella del cliente, scrive in chat cosa vuole, e riceve registrazioni contabili corrette e PDF pronti — senza toccare un singolo campo manualmente.
+**Current focus:** Planning next milestone (v2.0) — Pipeline B, Advisory Chat, Moduli Fiscali
 
 ## Current Position
 
-Phase: 1 of 4 (Stack Cleanup)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-18 — Roadmap created; milestone 1 scoped into 4 phases
+Phase: v2.0 not yet planned
+Status: Ready to plan next milestone — run `/gsd:new-milestone`
+Last activity: 2026-03-20 — v1.0 MVP archived (4 phases, 8 plans, 125 commits)
 
-Progress: [░░░░░░░░░░] 0%
+## Completed Milestones
 
-## Performance Metrics
-
-**Velocity:**
-- Total plans completed: 0
-- Average duration: -
-- Total execution time: 0 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| - | - | - | - |
-
-**Recent Trend:**
-- Last 5 plans: -
-- Trend: -
-
-*Updated after each plan completion*
-| Phase 01-stack-cleanup P01 | 2 | 2 tasks | 3 files |
-| Phase 01-stack-cleanup P02 | 2min | 1 tasks | 1 files |
-| Phase 02-swarm-architecture P01 | 4min | 1 tasks | 5 files |
-| Phase 02-swarm-architecture P02 | 3min | 2 tasks | 3 files |
-| Phase 03-client-folder-scanner P01 | 2min | 2 tasks | 5 files |
-| Phase 03-client-folder-scanner P03-02 | 20min | 3 tasks | 3 files |
-| Phase 04-pipeline-a-ingestion P01 | 6min | 3 tasks | 7 files |
-| Phase 04-pipeline-a-ingestion P02 | 3min | 2 tasks | 2 files |
-| Phase 04-pipeline-a-ingestion P04-02 | 30min | 3 tasks | 2 files |
+- ✅ v1.0 MVP — Phases 1-4 (shipped 2026-03-20) — see .planning/milestones/v1.0-ROADMAP.md
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+Key decisions are logged in PROJECT.md Key Decisions table.
 
-- Stack: LangChain, SQLAlchemy removed — openai SDK nativo + sqlite3 nativo already in use
-- Stack: PyPDF2 deprecated, replacing with pypdf (same maintainer, drop-in)
-- Stack: sentence-transformers needed for Italian-quality RAG embeddings (multilingual MiniLM)
-- Architecture: Swarm pattern with ProcessingContext — agents are dumb, context carries state
-- Architecture: Agents are sequential (not parallel) — hardware constraint 16GB/4GB VRAM
-- [Phase 01-stack-cleanup]: Removed LangChain, SQLAlchemy, PyPDF2, beautifulsoup4 from requirements; added pypdf>=4.0.0 and sentence-transformers>=3.0.0
-- [Phase 01-stack-cleanup]: pypdf is drop-in replacement for PyPDF2 (same maintainer, not deprecated)
-- [Phase 01-stack-cleanup]: sentence-transformers added now for quality Italian-language embeddings in ChromaDB RAG pipeline
-- [Phase 01-stack-cleanup]: SentenceTransformerEmbeddingFunction from chromadb.utils used — ChromaDB handles embedding calls transparently for add/query
-- [Phase 01-stack-cleanup]: Missing sentence-transformers raises ImportError (not silent fallback) — RAG without multilingual embeddings is non-functional for Italian text
-- [Phase 01-stack-cleanup]: Collection metadata stores embedding_model key to detect incompatible existing collections and trigger silent recreation
-- [Phase 02-swarm-architecture]: ProcessingContext is a @dataclass with field(default_factory=...) for mutable defaults; domain-neutral (no accounting fields)
-- [Phase 02-swarm-architecture]: BaseSwarmAgent is purely additive: extends BaseAccountingAgent + adds abstract process(); TYPE_CHECKING guard prevents circular imports
-- [Phase 02-swarm-architecture]: conftest.py added to fix pytest sys.path when /bin/python 3.10 is pytest interpreter vs pyenv 3.13 project Python
-- [Phase 02-swarm-architecture]: FatturazioneAgent.process() calls analizza_xml_bytes() (non-LLM deterministic path) for pipeline use; LLM commentary is a separate step
-- [Phase 02-swarm-architecture]: route_with_context() delegates to route() for keyword matching — single source of truth for routing rules
-- [Phase 02-swarm-architecture]: _PlaceholderSwarmAgent defined at module level in orchestrator.py — concrete no-op BaseSwarmAgent for domains not yet implemented
-- [Phase 03-client-folder-scanner]: Raw byte peek (b'FatturaElettronica' in 512 bytes) for XML classification — no lxml parse during scan, 100x faster per file
-- [Phase 03-client-folder-scanner]: scanner/ and pipeline/ have zero Streamlit imports — pure Python, fully testable without Streamlit runtime
-- [Phase 03-client-folder-scanner]: scan() returns empty ScanResult for missing/non-directory paths — no exception raised, UI layer handles error display
-- [Phase 03-client-folder-scanner]: Streamlit st.text_input must use key= only (no value=) when session_state is the source of truth — mixing both freezes the widget
-- [Phase 03-client-folder-scanner]: Sidebar input background raised to rgba(255,255,255,0.92) for dark-text readability on dark navy sidebar; ::placeholder added with muted color
-- [Phase 04-pipeline-a-ingestion]: db_path optional parameter in process_folder() enables test isolation without monkeypatching
-- [Phase 04-pipeline-a-ingestion]: _detect_header_row requires keyword match + date pattern in next row to prevent false positives on metadata rows
-- [Phase 04-pipeline-a-ingestion]: IBAN-CoA mapping defaults to C.IV.1 (Depositi bancari) — safe fallback when no custom mapping configured
-- [Phase 04-pipeline-a-ingestion]: pipeline_a_results session state key holds PipelineResult; in-place r.status mutations drive UI re-render via st.rerun()
-- [Phase 04-pipeline-a-ingestion]: Bank movement _confirmed/_skipped are dynamic attributes on BankMovementResult — not persisted, reset on next Avvia elaborazione
-- [Phase 04-pipeline-a-ingestion]: CoA selectbox uses get_conti_comuni() — only commonly-used accounts shown, not full OIC chart
-- [Phase 04-pipeline-a-ingestion]: pipeline_a_results session state key holds PipelineResult; in-place r.status mutations drive UI re-render via st.rerun()
-- [Phase 04-pipeline-a-ingestion]: Bank movement _confirmed/_skipped are dynamic attributes on BankMovementResult — not persisted, reset on next Avvia elaborazione
-- [Phase 04-pipeline-a-ingestion]: CoA selectbox uses get_conti_comuni() — only commonly-used accounts shown, not full OIC chart
+Most important for next milestone:
+- Swarm pattern (ProcessingContext) established — Pipeline B and new agents plug in directly
+- Human-in-the-loop mandatory for all registrations — maintain in Pipeline B advisory flows
+- Deterministic Python for all fiscal calculations — LLM only for classification and advisory
+- st.text_input: use key= only (no value=) when session_state is source of truth
+- db_path optional for test isolation — apply pattern to all new pipeline modules
 
 ### Pending Todos
 
-None yet.
+None — fresh start for v2.0.
 
 ### Blockers/Concerns
 
-None yet.
+None.
 
 ## Session Continuity
 
-Last session: 2026-03-20T15:53:18.433Z
-Stopped at: Completed 04-02-PLAN.md — Phase 4 Pipeline A Ingestion complete
+Last session: 2026-03-20
+Stopped at: v1.0 MVP milestone completion and archival
 Resume file: None
