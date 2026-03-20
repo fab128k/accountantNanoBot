@@ -136,6 +136,9 @@ htmlcov/
 # AccountantNanoBot — dati sensibili clienti (MAI committare)
 # =============================================================================
 
+# Cartella clienti (dati sensibili)
+CLIENTI/
+
 # Fatture e documenti clienti reali
 FATTURE/
 data/fatture_xml/
